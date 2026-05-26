@@ -145,6 +145,8 @@ The workflow at `.github/workflows/digen-daily-reward-token6.yml` runs `DIGEN_TO
 
 Both workflows can also be started manually from the Actions tab.
 
+Each workflow writes the latest JSON result to the GitHub step summary and uploads `logs/` as a workflow artifact, so you can download the run logs from the Actions page.
+
 To test token mode locally:
 
 ```bat

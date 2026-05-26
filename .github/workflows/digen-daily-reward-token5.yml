@@ -25,3 +25,22 @@ jobs:
         env:
           DIGEN_TOKEN5: ${{ secrets.DIGEN_TOKEN5 }}
         run: npm run api-reward -- token --token-name=DIGEN_TOKEN5
+
+      - name: Summarize reward log
+        if: always()
+        shell: bash
+        run: |
+          if compgen -G "logs/*.jsonl" > /dev/null; then
+            echo "### Digen reward log" >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            tail -n 1 logs/*.jsonl >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload reward logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: digen-reward-logs-token5
+          path: logs/
+          if-no-files-found: warn
