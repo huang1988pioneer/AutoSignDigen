@@ -57,12 +57,19 @@ async function readResponse(response) {
 }
 
 async function callRewardApiWithToken(config, token) {
+  let normalizedToken = token.trim();
+  try {
+    normalizedToken = decodeURIComponent(normalizedToken);
+  } catch {
+    // Keep the original value if it is not URL encoded.
+  }
+
   const headers = {
     Accept: "application/json, text/plain, */*",
     "Content-Type": "application/json",
     "Digen-Language": "zh-TW",
     "Digen-SessionID": crypto.randomUUID(),
-    "Digen-Token": token
+    "Digen-Token": normalizedToken
   };
 
   const profileResponse = await fetch(`${config.checkin.apiBaseUrl}/v1/user/profile`, {
