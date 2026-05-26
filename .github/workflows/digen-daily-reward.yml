@@ -2,7 +2,7 @@ name: Digen Daily Reward
 
 on:
   schedule:
-    - cron: "0 1 * * *"
+    - cron: "6 22 * * *"
   workflow_dispatch:
 
 jobs:
