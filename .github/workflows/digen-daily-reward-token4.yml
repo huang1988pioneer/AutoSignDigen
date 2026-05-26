@@ -1,0 +1,27 @@
+name: Digen Daily Reward Token 4
+
+on:
+  schedule:
+    - cron: "9 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  reward:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Claim Digen daily login reward for feng33feng35feng3
+        env:
+          DIGEN_TOKEN4: ${{ secrets.DIGEN_TOKEN4 }}
+        run: npm run api-reward -- token --token-name=DIGEN_TOKEN4
