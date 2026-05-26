@@ -25,6 +25,14 @@ const explicitToken = tokenArg?.slice("--token=".length)
   || process.env.DIGEN_TOKEN;
 const tokenMode = accountName === "token" || Boolean(explicitToken);
 
+const defaultConfig = {
+  siteUrl: "https://digen.ai/zh-TW/explore",
+  checkin: {
+    apiBaseUrl: "https://api.digen.ai",
+    rewardEndpoint: "/v1/credit/reward?action=Login"
+  }
+};
+
 function todayForLogName() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Taipei",
@@ -183,7 +191,7 @@ await ensureRuntimeDirs();
 
 let config;
 try {
-  config = await loadConfig();
+  config = tokenMode ? defaultConfig : await loadConfig();
 } catch (error) {
   console.error(error.message);
   process.exit(1);
