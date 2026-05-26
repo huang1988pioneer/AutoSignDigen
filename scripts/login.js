@@ -58,13 +58,17 @@ const context = await chromium.launchPersistentContext(profilePathFor(account.na
 });
 
 const page = context.pages()[0] ?? await context.newPage();
-await page.goto(account.siteUrl ?? config.siteUrl, { waitUntil: "domcontentloaded" });
+await page.goto(account.siteUrl ?? config.siteUrl, {
+  waitUntil: "domcontentloaded",
+  timeout: 120000
+});
 
 console.log(`Opened login browser for ${account.name}.`);
 console.log("Log in to Digen, confirm the account is active, then return here and press Enter.");
+console.log("There is no login time limit. Leave this window open until you are done.");
 
 const rl = readline.createInterface({ input, output });
-await rl.question("");
+await rl.question("Press Enter after login is complete...");
 rl.close();
 
 await context.close();
