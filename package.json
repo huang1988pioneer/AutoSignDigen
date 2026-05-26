@@ -1,0 +1,16 @@
+{
+  "name": "digen-auto-sign",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Playwright multi-profile daily check-in helper for Digen.",
+  "type": "module",
+  "scripts": {
+    "login": "node scripts/login.js",
+    "checkin": "node scripts/checkin.js",
+    "checkin:headed": "node scripts/checkin.js --headed",
+    "api-reward": "node scripts/api-reward.js"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}

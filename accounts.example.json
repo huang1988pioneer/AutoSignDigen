@@ -1,0 +1,31 @@
+{
+  "siteUrl": "https://digen.ai/zh-TW/explore",
+  "accounts": [
+    {
+      "name": "account1",
+      "enabled": true
+    },
+    {
+      "name": "account2",
+      "enabled": true
+    }
+  ],
+  "checkin": {
+    "apiBaseUrl": "https://api.digen.ai",
+    "rewardEndpoint": "/v1/credit/reward?action=Login",
+    "entryTexts": [
+      "Rewards",
+      "Daily",
+      "Check in",
+      "Check-in",
+      "Claim"
+    ],
+    "successTexts": [
+      "Completed",
+      "Claimed",
+      "Success"
+    ],
+    "timeoutMs": 12000,
+    "delayBetweenAccountsMs": 45000
+  }
+}
