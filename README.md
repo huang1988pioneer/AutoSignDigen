@@ -125,6 +125,12 @@ For `chbondg2`, use:
 DIGEN_TOKEN5
 ```
 
+For `huang1988pioneer`, use:
+
+```text
+DIGEN_TOKEN6
+```
+
 The workflow at `.github/workflows/digen-daily-reward.yml` runs `DIGEN_TOKEN1` every day at `22:06 UTC`, which is `06:06` in Taipei.
 
 The workflow at `.github/workflows/digen-daily-reward-token2.yml` runs `DIGEN_TOKEN2` every day at `23:07 UTC`, which is `07:07` in Taipei.
@@ -134,6 +140,8 @@ The workflow at `.github/workflows/digen-daily-reward-token3.yml` runs `DIGEN_TO
 The workflow at `.github/workflows/digen-daily-reward-token4.yml` runs `DIGEN_TOKEN4` every day at `01:09 UTC`, which is `09:09` in Taipei.
 
 The workflow at `.github/workflows/digen-daily-reward-token5.yml` runs `DIGEN_TOKEN5` every day at `02:10 UTC`, which is `10:10` in Taipei.
+
+The workflow at `.github/workflows/digen-daily-reward-token6.yml` runs `DIGEN_TOKEN6` every day at `03:11 UTC`, which is `11:11` in Taipei.
 
 Both workflows can also be started manually from the Actions tab.
 
@@ -157,6 +165,10 @@ cmd /c "set DIGEN_TOKEN4=your_token_value&& npm run api-reward -- token --token-
 
 ```bat
 cmd /c "set DIGEN_TOKEN5=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN5"
+```
+
+```bat
+cmd /c "set DIGEN_TOKEN6=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN6"
 ```
 
 ## Scheduler

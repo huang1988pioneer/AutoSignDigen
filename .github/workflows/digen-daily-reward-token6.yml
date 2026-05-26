@@ -1,0 +1,27 @@
+name: Digen Daily Reward Token 6
+
+on:
+  schedule:
+    - cron: "11 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  reward:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Claim Digen daily login reward for huang1988pioneer
+        env:
+          DIGEN_TOKEN6: ${{ secrets.DIGEN_TOKEN6 }}
+        run: npm run api-reward -- token --token-name=DIGEN_TOKEN6
