@@ -107,9 +107,17 @@ For `abuhg17`, use:
 DIGEN_TOKEN2
 ```
 
+For `fengtuprinfo`, use:
+
+```text
+DIGEN_TOKEN3
+```
+
 The workflow at `.github/workflows/digen-daily-reward.yml` runs `DIGEN_TOKEN1` every day at `22:06 UTC`, which is `06:06` in Taipei.
 
 The workflow at `.github/workflows/digen-daily-reward-token2.yml` runs `DIGEN_TOKEN2` every day at `23:07 UTC`, which is `07:07` in Taipei.
+
+The workflow at `.github/workflows/digen-daily-reward-token3.yml` runs `DIGEN_TOKEN3` every day at `00:08 UTC`, which is `08:08` in Taipei.
 
 Both workflows can also be started manually from the Actions tab.
 
@@ -121,6 +129,10 @@ cmd /c "set DIGEN_TOKEN1=your_token_value&& npm run api-reward -- token --token-
 
 ```bat
 cmd /c "set DIGEN_TOKEN2=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN2"
+```
+
+```bat
+cmd /c "set DIGEN_TOKEN3=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN3"
 ```
 
 ## Scheduler
