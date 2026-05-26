@@ -101,12 +101,26 @@ GitHub Actions cannot use the local browser profile. For Actions, save each Dige
 DIGEN_TOKEN1
 ```
 
-The workflow at `.github/workflows/digen-daily-reward.yml` runs every day at `22:06 UTC`, which is `06:06` in Taipei, and can also be started manually from the Actions tab.
+For `abuhg17`, use:
+
+```text
+DIGEN_TOKEN2
+```
+
+The workflow at `.github/workflows/digen-daily-reward.yml` runs `DIGEN_TOKEN1` every day at `22:06 UTC`, which is `06:06` in Taipei.
+
+The workflow at `.github/workflows/digen-daily-reward-token2.yml` runs `DIGEN_TOKEN2` every day at `23:07 UTC`, which is `07:07` in Taipei.
+
+Both workflows can also be started manually from the Actions tab.
 
 To test token mode locally:
 
 ```bat
 cmd /c "set DIGEN_TOKEN1=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN1"
+```
+
+```bat
+cmd /c "set DIGEN_TOKEN2=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN2"
 ```
 
 ## Scheduler
