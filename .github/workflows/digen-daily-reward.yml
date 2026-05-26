@@ -23,5 +23,5 @@ jobs:
 
       - name: Claim Digen daily login reward
         env:
-          DIGEN_TOKEN: ${{ secrets.DIGEN_TOKEN }}
-        run: npm run api-reward -- token
+          DIGEN_TOKEN1: ${{ secrets.DIGEN_TOKEN1 }}
+        run: npm run api-reward -- token --token-name=DIGEN_TOKEN1

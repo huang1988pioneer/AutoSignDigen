@@ -18,7 +18,11 @@ const tokenArg = rawArgs.find((arg) => arg.startsWith("--token="));
 const headed = rawArgs.includes("--headed");
 const cdpUrl = cdpArg?.split("=")[1];
 const browserName = browserArg?.split("=")[1] ?? "chrome";
-const explicitToken = tokenArg?.slice("--token=".length) || process.env.DIGEN_TOKEN;
+const tokenNameArg = rawArgs.find((arg) => arg.startsWith("--token-name="));
+const tokenName = tokenNameArg?.slice("--token-name=".length);
+const explicitToken = tokenArg?.slice("--token=".length)
+  || (tokenName ? process.env[tokenName] : undefined)
+  || process.env.DIGEN_TOKEN;
 const tokenMode = accountName === "token" || Boolean(explicitToken);
 
 function todayForLogName() {
@@ -191,7 +195,7 @@ let result;
 try {
   if (tokenMode) {
     if (!explicitToken) {
-      throw new Error("DIGEN_TOKEN is required for token mode.");
+      throw new Error(`${tokenName || "DIGEN_TOKEN"} is required for token mode.`);
     }
 
     result = await callRewardApiWithToken(config, explicitToken);

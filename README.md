@@ -95,13 +95,19 @@ Results are written to `logs/api-reward-YYYY-MM-DD.jsonl`.
 
 ## GitHub Actions
 
-GitHub Actions cannot use the local `profiles/main` browser profile. For Actions, save the Digen cookie value named `digen_token` as a repository secret:
+GitHub Actions cannot use the local browser profile. For Actions, save each Digen cookie value named `digen_token` as a repository secret. For `goldshoot0720`, use:
 
 ```text
-DIGEN_TOKEN
+DIGEN_TOKEN1
 ```
 
 The workflow at `.github/workflows/digen-daily-reward.yml` runs every day at `01:00 UTC`, which is `09:00` in Taipei, and can also be started manually from the Actions tab.
+
+To test token mode locally:
+
+```bat
+cmd /c "set DIGEN_TOKEN1=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN1"
+```
 
 ## Scheduler
 
