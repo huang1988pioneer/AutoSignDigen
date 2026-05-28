@@ -2,7 +2,7 @@ name: Digen Daily Reward Token 4
 
 on:
   schedule:
-    - cron: "9 1 * * *"
+    - cron: "25 21 * * *"
   workflow_dispatch:
 
 jobs:
