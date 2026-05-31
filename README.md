@@ -131,9 +131,9 @@ For `huang1988pioneer`, use:
 DIGEN_TOKEN6
 ```
 
-The workflow at `.github/workflows/digen-daily-reward.yml` can run `DIGEN_TOKEN1` through `DIGEN_TOKEN33`. It runs every day at `21:05 UTC`, which is `05:05` in Taipei, and waits 600 seconds between configured tokens.
+The workflow at `.github/workflows/digen-daily-reward.yml` can run `DIGEN_TOKEN1` through `DIGEN_TOKEN33`. It runs every day at `21:05 UTC`, which is `05:05` in Taipei, and creates one GitHub Actions job per token, such as `reward (1)`, `reward (2)`, and `reward (3)`.
 
-Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
+Each configured token waits for its scheduled slot before running, with 300 seconds between token indexes. Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
 
 The workflow can also be started manually from the Actions tab.
 
