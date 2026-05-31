@@ -161,7 +161,7 @@ For `fengfence_fence`, use:
 DIGEN_TOKEN11
 ```
 
-The workflow at `.github/workflows/digen-daily-reward.yml` runs every day at `21:05 UTC`, which is `05:05` in Taipei, and creates one GitHub Actions job per configured token, such as `checkin-token-1 - goldshoot0720`.
+The workflow at `.github/workflows/digen-daily-reward.yml` runs every day at `21:05 UTC` and `09:05 UTC`, which are `05:05` and `17:05` in Taipei. It creates one GitHub Actions job per configured token, such as `checkin-token-1 - goldshoot0720`.
 
 Configured token jobs run without an artificial delay between accounts. Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
 
