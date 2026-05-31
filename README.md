@@ -131,21 +131,13 @@ For `huang1988pioneer`, use:
 DIGEN_TOKEN6
 ```
 
-The workflow at `.github/workflows/digen-daily-reward.yml` runs `DIGEN_TOKEN1` every day at `21:05 UTC`, which is `05:05` in Taipei.
+The workflow at `.github/workflows/digen-daily-reward.yml` can run `DIGEN_TOKEN1` through `DIGEN_TOKEN33`. It runs every day at `21:05 UTC`, which is `05:05` in Taipei, and waits 600 seconds between configured tokens.
 
-The workflow at `.github/workflows/digen-daily-reward-token2.yml` runs `DIGEN_TOKEN2` every day at `21:15 UTC`, which is `05:15` in Taipei.
+Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
 
-The workflow at `.github/workflows/digen-daily-reward-token3.yml` runs `DIGEN_TOKEN3` every day at `21:45 UTC`, which is `05:45` in Taipei.
+The workflow can also be started manually from the Actions tab.
 
-The workflow at `.github/workflows/digen-daily-reward-token4.yml` runs `DIGEN_TOKEN4` every day at `21:25 UTC`, which is `05:25` in Taipei.
-
-The workflow at `.github/workflows/digen-daily-reward-token5.yml` runs `DIGEN_TOKEN5` every day at `21:35 UTC`, which is `05:35` in Taipei.
-
-The workflow at `.github/workflows/digen-daily-reward-token6.yml` runs `DIGEN_TOKEN6` every day at `03:11 UTC`, which is `11:11` in Taipei.
-
-Both workflows can also be started manually from the Actions tab.
-
-Each workflow writes the latest JSON result to the GitHub step summary and uploads `logs/` as a workflow artifact, so you can download the run logs from the Actions page.
+The workflow writes the latest JSON results to the GitHub step summary and uploads `logs/` as a workflow artifact, so you can download the run logs from the Actions page.
 
 To test token mode locally:
 
@@ -169,9 +161,7 @@ cmd /c "set DIGEN_TOKEN4=your_token_value&& npm run api-reward -- token --token-
 cmd /c "set DIGEN_TOKEN5=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN5"
 ```
 
-```bat
-cmd /c "set DIGEN_TOKEN6=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN6"
-```
+Use the same command shape for `DIGEN_TOKEN6` through `DIGEN_TOKEN33`.
 
 ## Scheduler
 

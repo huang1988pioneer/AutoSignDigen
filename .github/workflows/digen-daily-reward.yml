@@ -8,6 +8,8 @@ on:
 jobs:
   reward:
     runs-on: ubuntu-latest
+    env:
+      REWARD_DELAY_SECONDS: 600
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,10 +23,85 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Claim Digen daily login reward
+      - name: Claim Digen daily login rewards
         env:
           DIGEN_TOKEN1: ${{ secrets.DIGEN_TOKEN1 }}
-        run: npm run api-reward -- token --token-name=DIGEN_TOKEN1
+          DIGEN_TOKEN2: ${{ secrets.DIGEN_TOKEN2 }}
+          DIGEN_TOKEN3: ${{ secrets.DIGEN_TOKEN3 }}
+          DIGEN_TOKEN4: ${{ secrets.DIGEN_TOKEN4 }}
+          DIGEN_TOKEN5: ${{ secrets.DIGEN_TOKEN5 }}
+          DIGEN_TOKEN6: ${{ secrets.DIGEN_TOKEN6 }}
+          DIGEN_TOKEN7: ${{ secrets.DIGEN_TOKEN7 }}
+          DIGEN_TOKEN8: ${{ secrets.DIGEN_TOKEN8 }}
+          DIGEN_TOKEN9: ${{ secrets.DIGEN_TOKEN9 }}
+          DIGEN_TOKEN10: ${{ secrets.DIGEN_TOKEN10 }}
+          DIGEN_TOKEN11: ${{ secrets.DIGEN_TOKEN11 }}
+          DIGEN_TOKEN12: ${{ secrets.DIGEN_TOKEN12 }}
+          DIGEN_TOKEN13: ${{ secrets.DIGEN_TOKEN13 }}
+          DIGEN_TOKEN14: ${{ secrets.DIGEN_TOKEN14 }}
+          DIGEN_TOKEN15: ${{ secrets.DIGEN_TOKEN15 }}
+          DIGEN_TOKEN16: ${{ secrets.DIGEN_TOKEN16 }}
+          DIGEN_TOKEN17: ${{ secrets.DIGEN_TOKEN17 }}
+          DIGEN_TOKEN18: ${{ secrets.DIGEN_TOKEN18 }}
+          DIGEN_TOKEN19: ${{ secrets.DIGEN_TOKEN19 }}
+          DIGEN_TOKEN20: ${{ secrets.DIGEN_TOKEN20 }}
+          DIGEN_TOKEN21: ${{ secrets.DIGEN_TOKEN21 }}
+          DIGEN_TOKEN22: ${{ secrets.DIGEN_TOKEN22 }}
+          DIGEN_TOKEN23: ${{ secrets.DIGEN_TOKEN23 }}
+          DIGEN_TOKEN24: ${{ secrets.DIGEN_TOKEN24 }}
+          DIGEN_TOKEN25: ${{ secrets.DIGEN_TOKEN25 }}
+          DIGEN_TOKEN26: ${{ secrets.DIGEN_TOKEN26 }}
+          DIGEN_TOKEN27: ${{ secrets.DIGEN_TOKEN27 }}
+          DIGEN_TOKEN28: ${{ secrets.DIGEN_TOKEN28 }}
+          DIGEN_TOKEN29: ${{ secrets.DIGEN_TOKEN29 }}
+          DIGEN_TOKEN30: ${{ secrets.DIGEN_TOKEN30 }}
+          DIGEN_TOKEN31: ${{ secrets.DIGEN_TOKEN31 }}
+          DIGEN_TOKEN32: ${{ secrets.DIGEN_TOKEN32 }}
+          DIGEN_TOKEN33: ${{ secrets.DIGEN_TOKEN33 }}
+        shell: bash
+        run: |
+          configured_tokens=()
+          duplicate_token_found=0
+          declare -A token_hashes
+
+          for index in $(seq 1 33); do
+            token_name="DIGEN_TOKEN${index}"
+
+            if [ -n "${!token_name}" ]; then
+              token_hash="$(printf '%s' "${!token_name}" | sha256sum | awk '{print $1}')"
+
+              if [ -n "${token_hashes[$token_hash]:-}" ]; then
+                echo "::warning::${token_name} has the same value as ${token_hashes[$token_hash]}."
+                duplicate_token_found=1
+              else
+                token_hashes[$token_hash]="${token_name}"
+              fi
+
+              configured_tokens+=("${token_name}")
+            else
+              echo "Skipping ${token_name}: secret is not configured."
+            fi
+          done
+
+          if [ "${#configured_tokens[@]}" -eq 0 ]; then
+            echo "No DIGEN_TOKEN secrets are configured."
+            exit 1
+          fi
+
+          if [ "$duplicate_token_found" -eq 0 ]; then
+            echo "No duplicate configured DIGEN_TOKEN values were detected."
+          fi
+
+          for index in "${!configured_tokens[@]}"; do
+            token_name="${configured_tokens[$index]}"
+            echo "Claiming Digen daily login reward with ${token_name}."
+            npm run api-reward -- token --token-name="${token_name}"
+
+            if [ "$index" -lt "$((${#configured_tokens[@]} - 1))" ]; then
+              echo "Waiting ${REWARD_DELAY_SECONDS} seconds before the next token."
+              sleep "${REWARD_DELAY_SECONDS}"
+            fi
+          done
 
       - name: Summarize reward log
         if: always()
@@ -41,6 +118,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: digen-reward-logs-token1
+          name: digen-reward-logs
           path: logs/
           if-no-files-found: warn
