@@ -22,6 +22,15 @@ jobs:
       DIGEN_TOKEN9: ${{ secrets.DIGEN_TOKEN9 }}
       DIGEN_TOKEN10: ${{ secrets.DIGEN_TOKEN10 }}
       DIGEN_TOKEN11: ${{ secrets.DIGEN_TOKEN11 }}
+      DIGEN_TOKEN12: ${{ secrets.DIGEN_TOKEN12 }}
+      DIGEN_TOKEN13: ${{ secrets.DIGEN_TOKEN13 }}
+      DIGEN_TOKEN14: ${{ secrets.DIGEN_TOKEN14 }}
+      DIGEN_TOKEN15: ${{ secrets.DIGEN_TOKEN15 }}
+      DIGEN_TOKEN16: ${{ secrets.DIGEN_TOKEN16 }}
+      DIGEN_TOKEN17: ${{ secrets.DIGEN_TOKEN17 }}
+      DIGEN_TOKEN18: ${{ secrets.DIGEN_TOKEN18 }}
+      DIGEN_TOKEN19: ${{ secrets.DIGEN_TOKEN19 }}
+      DIGEN_TOKEN20: ${{ secrets.DIGEN_TOKEN20 }}
     steps:
       - name: Check configured token values
         shell: bash
@@ -30,7 +39,7 @@ jobs:
           duplicate_token_found=0
           declare -A token_hashes
 
-          for index in $(seq 1 11); do
+          for index in $(seq 1 20); do
             token_name="DIGEN_TOKEN${index}"
 
             if [ -n "${!token_name}" ]; then
@@ -89,6 +98,24 @@ jobs:
             account_label: fengtuta_tuta
           - token_index: 11
             account_label: fengfence_fence
+          - token_index: 12
+            account_label: samafengtu
+          - token_index: 13
+            account_label: fengtusama
+          - token_index: 14
+            account_label: fengwithting0831
+          - token_index: 15
+            account_label: fengwithfeng1127
+          - token_index: 16
+            account_label: fengwithtu1127
+          - token_index: 17
+            account_label: akaonda333
+          - token_index: 18
+            account_label: fbussinesseng
+          - token_index: 19
+            account_label: engdictatorf
+          - token_index: 20
+            account_label: flottojackpoteng
     env:
       DIGEN_TOKEN: ${{ secrets[format('DIGEN_TOKEN{0}', matrix.token_index)] }}
     steps:
