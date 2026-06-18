@@ -161,9 +161,63 @@ For `fengfence_fence`, use:
 DIGEN_TOKEN11
 ```
 
+For `samafengtu`, use:
+
+```text
+DIGEN_TOKEN12
+```
+
+For `fengtusama`, use:
+
+```text
+DIGEN_TOKEN13
+```
+
+For `fengwithting0831`, use:
+
+```text
+DIGEN_TOKEN14
+```
+
+For `fengwithfeng1127`, use:
+
+```text
+DIGEN_TOKEN15
+```
+
+For `fengwithtu1127`, use:
+
+```text
+DIGEN_TOKEN16
+```
+
+For `akaonda333`, use:
+
+```text
+DIGEN_TOKEN17
+```
+
+For `fbussinesseng`, use:
+
+```text
+DIGEN_TOKEN18
+```
+
+For `engdictatorf`, use:
+
+```text
+DIGEN_TOKEN19
+```
+
+For `flottojackpoteng`, use:
+
+```text
+DIGEN_TOKEN20
+```
+
 The workflow at `.github/workflows/digen-daily-reward.yml` runs every day at `21:05 UTC` and `09:05 UTC`, which are `05:05` and `17:05` in Taipei. It creates one GitHub Actions job per configured token, such as `checkin-token-1 - goldshoot0720`.
 
-Configured token jobs run without an artificial delay between accounts. Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
+Configured token jobs run with at most two accounts in parallel to reduce simultaneous requests. Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
 
 The workflow can also be started manually from the Actions tab.
 
@@ -191,7 +245,7 @@ cmd /c "set DIGEN_TOKEN4=your_token_value&& npm run api-reward -- token --token-
 cmd /c "set DIGEN_TOKEN5=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN5"
 ```
 
-Use the same command shape for `DIGEN_TOKEN6` through `DIGEN_TOKEN11`.
+Use the same command shape for `DIGEN_TOKEN6` through `DIGEN_TOKEN20`.
 
 ## Scheduler
 
