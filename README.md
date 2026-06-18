@@ -219,6 +219,8 @@ The workflow at `.github/workflows/digen-daily-reward.yml` runs every day at `21
 
 Configured token jobs run with at most two accounts in parallel to reduce simultaneous requests. Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
 
+The workflow at `.github/workflows/check-token-secret-duplicates.yml` is a dedicated duplicate check for `DIGEN_TOKEN1` through `DIGEN_TOKEN20`. It runs daily at `20:35 UTC`, can be started manually from the Actions tab, and fails if two configured token secrets have the same value.
+
 The workflow can also be started manually from the Actions tab.
 
 The workflow writes the latest JSON results to the GitHub step summary and uploads `logs/` as a workflow artifact, so you can download the run logs from the Actions page.
