@@ -31,6 +31,19 @@ jobs:
       DIGEN_TOKEN18: ${{ secrets.DIGEN_TOKEN18 }}
       DIGEN_TOKEN19: ${{ secrets.DIGEN_TOKEN19 }}
       DIGEN_TOKEN20: ${{ secrets.DIGEN_TOKEN20 }}
+      DIGEN_TOKEN21: ${{ secrets.DIGEN_TOKEN21 }}
+      DIGEN_TOKEN22: ${{ secrets.DIGEN_TOKEN22 }}
+      DIGEN_TOKEN23: ${{ secrets.DIGEN_TOKEN23 }}
+      DIGEN_TOKEN24: ${{ secrets.DIGEN_TOKEN24 }}
+      DIGEN_TOKEN25: ${{ secrets.DIGEN_TOKEN25 }}
+      DIGEN_TOKEN26: ${{ secrets.DIGEN_TOKEN26 }}
+      DIGEN_TOKEN27: ${{ secrets.DIGEN_TOKEN27 }}
+      DIGEN_TOKEN28: ${{ secrets.DIGEN_TOKEN28 }}
+      DIGEN_TOKEN29: ${{ secrets.DIGEN_TOKEN29 }}
+      DIGEN_TOKEN30: ${{ secrets.DIGEN_TOKEN30 }}
+      DIGEN_TOKEN31: ${{ secrets.DIGEN_TOKEN31 }}
+      DIGEN_TOKEN32: ${{ secrets.DIGEN_TOKEN32 }}
+      DIGEN_TOKEN33: ${{ secrets.DIGEN_TOKEN33 }}
     steps:
       - name: Check configured token values
         shell: bash
@@ -39,7 +52,7 @@ jobs:
           duplicate_token_found=0
           declare -A token_hashes
 
-          for index in $(seq 1 20); do
+          for index in $(seq 1 33); do
             token_name="DIGEN_TOKEN${index}"
 
             if [ -n "${!token_name}" ]; then
@@ -117,6 +130,32 @@ jobs:
             account_label: engdictatorf
           - token_index: 20
             account_label: flottojackpoteng
+          - token_index: 21
+            account_label: account21
+          - token_index: 22
+            account_label: account22
+          - token_index: 23
+            account_label: account23
+          - token_index: 24
+            account_label: account24
+          - token_index: 25
+            account_label: account25
+          - token_index: 26
+            account_label: account26
+          - token_index: 27
+            account_label: account27
+          - token_index: 28
+            account_label: account28
+          - token_index: 29
+            account_label: account29
+          - token_index: 30
+            account_label: account30
+          - token_index: 31
+            account_label: account31
+          - token_index: 32
+            account_label: account32
+          - token_index: 33
+            account_label: account33
     env:
       DIGEN_TOKEN: ${{ secrets[format('DIGEN_TOKEN{0}', matrix.token_index)] }}
     steps:

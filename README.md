@@ -215,11 +215,29 @@ For `flottojackpoteng`, use:
 DIGEN_TOKEN20
 ```
 
+For the remaining separate Playwright/token jobs, use:
+
+```text
+DIGEN_TOKEN21
+DIGEN_TOKEN22
+DIGEN_TOKEN23
+DIGEN_TOKEN24
+DIGEN_TOKEN25
+DIGEN_TOKEN26
+DIGEN_TOKEN27
+DIGEN_TOKEN28
+DIGEN_TOKEN29
+DIGEN_TOKEN30
+DIGEN_TOKEN31
+DIGEN_TOKEN32
+DIGEN_TOKEN33
+```
+
 The workflow at `.github/workflows/digen-daily-reward.yml` runs every day at `21:05 UTC` and `09:05 UTC`, which are `05:05` and `17:05` in Taipei. It creates one GitHub Actions job per configured token, such as `checkin-token-1 - goldshoot0720`.
 
 Configured token jobs run with at most two accounts in parallel to reduce simultaneous requests. Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
 
-The workflow at `.github/workflows/check-token-secret-duplicates.yml` is a dedicated duplicate check for `DIGEN_TOKEN1` through `DIGEN_TOKEN20`. It runs daily at `20:35 UTC`, can be started manually from the Actions tab, and fails if two configured token secrets have the same value.
+The workflow at `.github/workflows/check-token-secret-duplicates.yml` is a dedicated duplicate check for `DIGEN_TOKEN1` through `DIGEN_TOKEN33`. It runs daily at `20:35 UTC`, can be started manually from the Actions tab, and fails if two configured token secrets have the same value.
 
 The workflow can also be started manually from the Actions tab.
 
@@ -247,7 +265,7 @@ cmd /c "set DIGEN_TOKEN4=your_token_value&& npm run api-reward -- token --token-
 cmd /c "set DIGEN_TOKEN5=your_token_value&& npm run api-reward -- token --token-name=DIGEN_TOKEN5"
 ```
 
-Use the same command shape for `DIGEN_TOKEN6` through `DIGEN_TOKEN20`.
+Use the same command shape for `DIGEN_TOKEN6` through `DIGEN_TOKEN33`.
 
 ## Scheduler
 
