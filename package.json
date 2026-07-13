@@ -8,7 +8,9 @@
     "login": "node scripts/login.js",
     "checkin": "node scripts/checkin.js",
     "checkin:headed": "node scripts/checkin.js --headed",
-    "api-reward": "node scripts/api-reward.js"
+    "api-reward": "node scripts/api-reward.js",
+    "write-result": "node scripts/write-checkin-result.js",
+    "summary": "node scripts/summarize-reward-results.js"
   },
   "dependencies": {
     "playwright": "^1.60.0"

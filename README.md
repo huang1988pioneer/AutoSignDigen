@@ -241,7 +241,21 @@ The workflow at `.github/workflows/check-token-secret-duplicates.yml` is a dedic
 
 The workflow can also be started manually from the Actions tab.
 
-The workflow writes the latest JSON results to the GitHub step summary and uploads `logs/` as a workflow artifact, so you can download the run logs from the Actions page.
+Each matrix job writes a structured `checkin-result.json` artifact (`checkin-result-N`). After all token jobs finish, the `daily-summary` job:
+
+1. Downloads every account result
+2. Builds one combined markdown/JSON report
+3. Writes the table into the workflow **Job Summary** (open the `daily-summary` job)
+4. Uploads `checkin-daily-summary` artifact (`checkin-daily-summary.md` + `.json`)
+5. Fails the summary job if any account status is `failed`
+
+Per-account reward logs under `logs/` are still uploaded as `digen-reward-logs-tokenN-*` artifacts.
+
+Locally you can rebuild a summary from a folder of result JSON (or raw `api-reward-*.jsonl` artifacts):
+
+```bat
+cmd /c npm run summary -- path\to\collected-results
+```
 
 To test token mode locally:
 

@@ -158,6 +158,9 @@ jobs:
             account_label: account33
     env:
       DIGEN_TOKEN: ${{ secrets[format('DIGEN_TOKEN{0}', matrix.token_index)] }}
+      DIGEN_TOKEN_INDEX: ${{ matrix.token_index }}
+      DIGEN_ACCOUNT_LABEL: ${{ matrix.account_label }}
+      DIGEN_RESULT_DIR: artifacts
     steps:
       - name: Skip missing token
         id: token
@@ -189,16 +192,64 @@ jobs:
         if: steps.token.outputs.configured == 'true'
         run: npm run api-reward -- token
 
+      - name: Write account result
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p artifacts
+
+          if [ "${{ steps.token.outputs.configured }}" != "true" ]; then
+            # Still need the scripts for skipped accounts: checkout minimal result writer via curl is fragile.
+            # Write skipped result with inline node (no checkout when token missing).
+            node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const account = Number(process.env.DIGEN_TOKEN_INDEX);
+          const row = {
+            account,
+            name: process.env.DIGEN_ACCOUNT_LABEL || `DIGEN_TOKEN${account}`,
+            status: "skipped",
+            message: "token not configured",
+            creditsDelta: null,
+            profileStatus: null,
+            rewardStatus: null,
+            rawStatus: "skipped",
+            finishedAt: new Date().toISOString(),
+            runId: process.env.GITHUB_RUN_ID || null,
+            job: process.env.GITHUB_JOB || null,
+            tokenName: `DIGEN_TOKEN${account}`,
+          };
+          fs.mkdirSync("artifacts", { recursive: true });
+          fs.writeFileSync("artifacts/checkin-result.json", `${JSON.stringify(row, null, 2)}\n`);
+          console.log(JSON.stringify(row, null, 2));
+          NODE
+          else
+            node scripts/write-checkin-result.js
+          fi
+
       - name: Summarize reward log
         if: always()
         shell: bash
         run: |
-          if compgen -G "logs/*.jsonl" > /dev/null; then
+          if [ -f artifacts/checkin-result.json ]; then
+            echo "### Digen result for checkin-token-${{ matrix.token_index }} - ${{ matrix.account_label }}" >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat artifacts/checkin-result.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          elif compgen -G "logs/*.jsonl" > /dev/null; then
             echo "### Digen reward log for checkin-token-${{ matrix.token_index }} - ${{ matrix.account_label }}" >> "$GITHUB_STEP_SUMMARY"
             echo '```json' >> "$GITHUB_STEP_SUMMARY"
             tail -n 1 logs/*.jsonl >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Upload account result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkin-result-${{ matrix.token_index }}
+          path: artifacts/checkin-result.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Upload reward logs
         if: always()
@@ -207,3 +258,42 @@ jobs:
           name: digen-reward-logs-token${{ matrix.token_index }}-${{ matrix.account_label }}
           path: logs/
           if-no-files-found: ignore
+          retention-days: 14
+
+  daily-summary:
+    name: daily-summary
+    needs: reward
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Download all account results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: checkin-result-*
+          path: collected
+          merge-multiple: false
+
+      - name: Build daily summary
+        env:
+          DIGEN_SUMMARY_DIR: artifacts
+        run: npm run summary -- collected
+
+      - name: Upload daily summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkin-daily-summary
+          path: |
+            artifacts/checkin-daily-summary.md
+            artifacts/checkin-daily-summary.json
+          if-no-files-found: warn
+          retention-days: 30
