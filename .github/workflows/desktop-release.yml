@@ -1,0 +1,57 @@
+name: Desktop Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.rid }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            asset: DigenAutoSign-win-x64.zip
+          - rid: osx-x64
+            asset: DigenAutoSign-osx-x64.zip
+          - rid: linux-x64
+            asset: DigenAutoSign-linux-x64.zip
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Publish desktop app
+        run: >-
+          dotnet publish DigenAutoSign.Desktop/DigenAutoSign.Desktop.csproj
+          --configuration Release
+          --runtime ${{ matrix.rid }}
+          --self-contained true
+          --output publish/${{ matrix.rid }}
+          -p:PublishSingleFile=true
+          -p:PublishTrimmed=false
+      - name: Package archive
+        run: cd publish/${{ matrix.rid }} && zip -r ../../${{ matrix.asset }} .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" release-assets/* --generate-notes
