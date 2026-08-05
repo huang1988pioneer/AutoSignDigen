@@ -4,32 +4,5 @@
              RequestedThemeVariant="Light">
   <Application.Styles>
     <FluentTheme />
-    <Style Selector="Button.primary">
-      <Setter Property="Background" Value="#067B75" />
-      <Setter Property="Foreground" Value="White" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-    </Style>
-    <Style Selector="Button.secondary">
-      <Setter Property="Background" Value="#E6EEEC" />
-      <Setter Property="Foreground" Value="#123532" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-    </Style>
-    <Style Selector="Button.sidebarNav">
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="#D2E3E0" />
-      <Setter Property="HorizontalContentAlignment" Value="Left" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="Padding" Value="12,10" />
-      <Setter Property="CornerRadius" Value="8" />
-    </Style>
-    <Style Selector="Button.sidebarNav:pointerover"><Setter Property="Background" Value="#19504D" /><Setter Property="Foreground" Value="White" /></Style>
-    <Style Selector="Border.panel">
-      <Setter Property="Background" Value="White" />
-      <Setter Property="CornerRadius" Value="16" />
-      <Setter Property="BoxShadow" Value="0 10 28 0 #120B2D20" />
-    </Style>
-    <Style Selector="TextBlock.muted">
-      <Setter Property="Foreground" Value="#60706E" />
-    </Style>
   </Application.Styles>
 </Application>

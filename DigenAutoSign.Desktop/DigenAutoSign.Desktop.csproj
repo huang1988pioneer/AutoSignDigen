@@ -12,4 +12,10 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.6" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.6" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\package.json" Link="package.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\package-lock.json" Link="package-lock.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\scripts\**\*" Link="scripts\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\accounts.example.json" Link="accounts.example.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

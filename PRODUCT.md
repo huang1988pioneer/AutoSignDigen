@@ -8,40 +8,36 @@ adaptive
 
 ## Users
 
-Windows users who manage one or more Digen accounts and need a quick, reliable daily reward check-in routine.
+Repository maintainers who operate one or more Digen accounts and need to renew login tokens and supervise automated daily reward claims.
 
 ## Product Purpose
 
-Digen Auto Sign Desktop makes the existing local Playwright check-in scripts accessible from a Windows desktop interface. Success means users can configure accounts, save browser login sessions locally, run rewards for selected accounts, and understand each outcome without using terminal commands.
-
-## Positioning
-
-The application is a Windows Avalonia control surface over the project's local browser profiles and Node/Playwright automation; credentials remain in the user's browser profiles rather than in the account configuration.
+Digen Auto Sign is a desktop companion for the repository's existing Playwright and GitHub Actions automation. It makes account setup, token export, manual workflow runs, and run-status review accessible without manually assembling terminal commands.
 
 ## Operating Context
 
-The tool runs beside this repository on Windows. It uses local Chrome or Edge profile folders under `profiles/`, reads `accounts.json`, invokes the scripts in `scripts/`, and reads structured logs from `logs/`.
+The app runs beside this repository on Windows, macOS, or Linux. A user completes Digen and any third-party login challenges manually in a browser; the app never attempts to bypass OTP, CAPTCHA, or authentication protections. Tokens are copied to the clipboard for GitHub Secrets and are not written into the desktop configuration.
 
 ## Capabilities and Constraints
 
-- Windows-only for the first release; support Chrome and Edge local browser profiles.
-- Manage account names and enabled states in `accounts.json`.
-- Open an interactive browser for each account's manual Digen login.
-- Run one account or all enabled accounts, then show script output and recent results.
-- Preserve the existing Node/Playwright scripts as the automation implementation.
-- Never persist passwords or Digen tokens in the desktop application's account configuration.
+- Accounts use `DIGEN_TOKEN1` through `DIGEN_TOKEN33` GitHub secrets.
+- The existing Node/Playwright scripts remain the source of truth for browser automation (`scripts/login.js`, `scripts/export-token.js`, `scripts/api-reward.js`).
+- GitHub Actions access requires the authenticated GitHub CLI (`gh`).
+- Local account aliases are stored under the user AppData folder and synced into `accounts.json` for script compatibility.
 
 ## Brand Commitments
 
-The product name is Digen Auto Sign. The UI language is Traditional Chinese.
+The product name is Digen Auto Sign. The UI language is Traditional Chinese. The desktop shell is modelled after Musicful Flow (AutoSignMusicful).
 
 ## Evidence on Hand
 
-Existing scripts: `scripts/login.js`, `scripts/checkin.js`, `scripts/api-reward.js`, and `scripts/config.js`; configuration example: `accounts.example.json`; log output is JSONL in `logs/`. No logo, marketing imagery, or other brand assets were supplied.
+- Existing reward automation: `scripts/api-reward.js`, `scripts/checkin.js`
+- Existing token export: `scripts/export-token.js`
+- Existing workflows: `.github/workflows/digen-daily-reward.yml`, `.github/workflows/check-token-secret-duplicates.yml`
 
 ## Product Principles
 
-- Keep the daily workflow visible and low-risk.
-- Make account status and the next recovery action immediately clear.
-- Keep authentication local and user-controlled.
-- Treat automation results as operational records, not opaque background activity.
+- Keep authentication visibly manual and user-controlled.
+- Make token ownership and secret destinations unambiguous.
+- Surface automation state before asking users to act.
+- Preserve the repository scripts rather than duplicating their automation logic.

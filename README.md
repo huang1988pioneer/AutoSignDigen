@@ -2,17 +2,23 @@
 
 Playwright multi-profile daily login reward helper for Digen.
 
-## Windows Desktop UI (Avalonia)
+## Desktop UI (Avalonia)
 
-`DigenAutoSign.Desktop` is a Windows desktop control panel for the existing Node/Playwright scripts. It lets you select the workspace, manage `accounts.json`, open the interactive browser login for an account, run a selected account or all enabled accounts, and inspect the command output.
+`DigenAutoSign.Desktop` is an Avalonia control panel modelled after [Musicful Flow](https://github.com/huang1988pioneer/AutoSignMusicful) for this repository's Node/Playwright scripts and GitHub Actions workflow.
 
-Prerequisites: .NET 8 SDK, Node.js, and dependencies installed with `npm install`.
+Three main views:
+
+1. **簽到總覽** — trigger `digen-daily-reward.yml` and refresh the latest GitHub Actions run status (requires [GitHub CLI](https://cli.github.com/) `gh auth login`)
+2. **帳號設定** — edit local aliases for slots `1`–`33` (synced to `accounts.json` and mapped to `DIGEN_TOKEN1`–`DIGEN_TOKEN33`)
+3. **更新登入狀態** — open a browser profile, complete Digen login manually, export `digen_token`, and copy it for the matching GitHub Secret
+
+Prerequisites: .NET 8 SDK, Node.js, `npm install`, and (for Actions dashboard) GitHub CLI.
 
 ```bat
 dotnet run --project DigenAutoSign.Desktop\DigenAutoSign.Desktop.csproj
 ```
 
-The application uses the local `profiles` folder for browser sessions; it does not store passwords or Digen tokens in `accounts.json`.
+The application uses the local `profiles` folder for browser sessions. Tokens are copied to the clipboard only; they are not written into `accounts.json` or the UI log.
 
 ## What Was Found
 

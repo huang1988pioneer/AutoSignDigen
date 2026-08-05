@@ -1,43 +1,167 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="DigenAutoSign.Desktop.MainWindow"
-        Width="1120" Height="760" MinWidth="900" MinHeight="620"
-        Title="Digen Auto Sign" Background="#F4F6F8">
-  <!-- THESIS: daily reward management is a three-step local-to-GitHub flow, not a terminal task. OWN-WORLD: deep teal navigation, calm white work surfaces, and clear teal actions. STORY: configure a numbered account, create its local login profile, copy only the matching token to GitHub Secrets, then observe the workflow. FIRST VIEWPORT: a fixed left rail frames Actions health, account results, and one direct run action. FORM: desktop operations dashboard, informed by the supplied OiiOii and Musicful flows. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md. -->
-  <Grid ColumnDefinitions="258,*">
-    <Border Background="#0E302F" Padding="26,28">
-      <Grid RowDefinitions="Auto,Auto,*,Auto">
-        <StackPanel Spacing="7"><TextBlock Text="Digen Auto Sign" Foreground="White" FontSize="25" FontWeight="Bold" /><TextBlock Text="安全登入狀態擷取器" Foreground="#D5E8E5" FontSize="14" /><TextBlock Text="每日自動簽到與領取獎勵" Foreground="#9AC3BE" FontSize="12" /></StackPanel>
-        <Border Grid.Row="1" Background="#1A5350" CornerRadius="10" Padding="14" Margin="0,30,0,0"><StackPanel Spacing="6"><TextBlock Text="不會儲存帳密" Foreground="White" FontWeight="SemiBold" /><TextBlock Text="Token 僅從本機瀏覽器 profile 讀取後複製到剪貼簿，不會寫入設定檔或紀錄。" Foreground="#D4E8E5" FontSize="12" TextWrapping="Wrap" /></StackPanel></Border>
-        <StackPanel Grid.Row="2" Margin="0,34,0,0" Spacing="6">
-          <TextBlock Text="主要功能" Foreground="#B6D5D1" FontSize="13" Margin="0,0,0,6" />
-          <Button Classes="sidebarNav" Content="GitHub Actions 儀表板" Command="{Binding ShowDashboardCommand}" />
-          <Button Classes="sidebarNav" Content="帳號設定" Command="{Binding ShowAccountsCommand}" />
-          <Button Classes="sidebarNav" Content="建立登入狀態" Command="{Binding ShowLoginStateCommand}" />
+        Title="Digen Auto Sign"
+        Width="1000" Height="860"
+        MinWidth="1000" MinHeight="860"
+        Background="#F4F7F6">
+  <Window.Styles>
+    <Style Selector="Border.panel">
+      <Setter Property="Background" Value="#FFFFFF"/>
+      <Setter Property="CornerRadius" Value="14"/>
+      <Setter Property="Padding" Value="24"/>
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="#5F736F"/>
+    </Style>
+    <Style Selector="Button.nav">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#B9D5D1"/>
+      <Setter Property="Padding" Value="13,10"/>
+      <Setter Property="CornerRadius" Value="7"/>
+    </Style>
+    <Style Selector="Button.nav:pointerover">
+      <Setter Property="Background" Value="#1A4A47"/>
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="#067B75"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="Padding" Value="17,10"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="244,*">
+    <Border Background="#0E302F" Padding="25">
+      <StackPanel Spacing="20">
+        <StackPanel Spacing="6">
+          <TextBlock Text="Digen Auto Sign" FontSize="24" FontWeight="Bold" Foreground="White"/>
+          <TextBlock Text="自動簽到控制台" Foreground="#A8D0CB"/>
+          <TextBlock Text="管理登入狀態、GitHub Actions 與每日簽到結果。"
+                     TextWrapping="Wrap" FontSize="12" Foreground="#8FB8B3" Margin="0,8,0,0"/>
         </StackPanel>
-        <TextBlock Grid.Row="3" Text="Google、OTP 與 CAPTCHA 均在你的瀏覽器內完成。" Foreground="#9AC3BE" FontSize="12" TextWrapping="Wrap" />
-      </Grid>
+
+        <Border Background="#1A5350" CornerRadius="10" Padding="14">
+          <StackPanel Spacing="6">
+            <TextBlock Text="安全提醒" FontWeight="SemiBold" Foreground="White"/>
+            <TextBlock Text="登入、OTP 與 CAPTCHA 必須由你在瀏覽器中完成。此工具只會從本機 profile 讀取 Token 並複製到剪貼簿。"
+                       TextWrapping="Wrap" FontSize="12" Foreground="#C5E3DF"/>
+          </StackPanel>
+        </Border>
+
+        <StackPanel Spacing="5">
+          <Button Classes="nav" Click="DashboardNavButton_OnClick">簽到總覽</Button>
+          <Button Classes="nav" Click="AccountsNavButton_OnClick">帳號設定</Button>
+          <Button Classes="nav" Click="LoginNavButton_OnClick">更新登入狀態</Button>
+        </StackPanel>
+
+        <TextBlock Text="排程：台灣時間 05:05、17:05（GitHub Actions）"
+                   TextWrapping="Wrap" FontSize="12" Foreground="#8FB8B3" Margin="0,18,0,0"/>
+      </StackPanel>
     </Border>
-    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto"><StackPanel Margin="48,38" Spacing="26">
-      <StackPanel IsVisible="{Binding IsDashboard}" Spacing="24">
-        <Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="7"><TextBlock Text="每日領取儀表板" FontSize="31" FontWeight="Light" Foreground="#12312F" /><TextBlock Text="手動執行每日領取，並讀取 GitHub Actions 的最新結果與帳號完成狀況。" Classes="muted" FontSize="15" /></StackPanel><TextBlock Grid.Column="1" Text="{Binding Status}" Foreground="#067B75" FontWeight="SemiBold" VerticalAlignment="Center" /></Grid>
-        <Border Classes="panel" Padding="28"><StackPanel Spacing="18">
-          <StackPanel Spacing="5"><TextBlock Text="GitHub Actions 儀表板" FontSize="21" FontWeight="SemiBold" Foreground="#12312F" /><TextBlock Text="工作流程使用 DIGEN_TOKEN1 至 DIGEN_TOKEN33。先設定帳號與登入狀態，再將 Token 貼到對應的 GitHub Secret。" Classes="muted" TextWrapping="Wrap" /></StackPanel>
-          <StackPanel Orientation="Horizontal" Spacing="10"><Button Classes="primary" Content="手動觸發每日簽到" Command="{Binding TriggerWorkflowCommand}" Padding="18,10" /><Button Classes="secondary" Content="更新執行結果" Command="{Binding ReloadCommand}" Padding="16,10" /></StackPanel>
-          <Grid ColumnDefinitions="*,*,*"><StackPanel Spacing="3"><TextBlock Text="已設定帳號" Classes="muted" FontSize="12" /><TextBlock Text="{Binding Accounts.Count}" FontSize="25" FontWeight="SemiBold" Foreground="#067B75" /></StackPanel><StackPanel Grid.Column="1" Spacing="3"><TextBlock Text="連續成功天數" Classes="muted" FontSize="12" /><TextBlock Text="{Binding ConsecutiveCheckinDays}" FontSize="25" FontWeight="SemiBold" Foreground="#067B75" /></StackPanel><StackPanel Grid.Column="2" Spacing="3"><TextBlock Text="最近 GitHub 執行" Classes="muted" FontSize="12" /><TextBlock Text="{Binding WorkflowSummary}" FontSize="18" FontWeight="SemiBold" Foreground="#067B75" /></StackPanel></Grid>
-          <TextBlock Text="{Binding WorkflowDetail}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
-          <ListBox ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}" BorderThickness="0" Background="Transparent" MaxHeight="250"><ListBox.ItemTemplate><DataTemplate><Grid ColumnDefinitions="Auto,2*,*,Auto" Margin="0,6"><CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" /><TextBlock Grid.Column="1" Margin="14,0,0,0" Text="{Binding Name}" FontWeight="SemiBold" Foreground="#173532" /><TextBlock Grid.Column="2" Margin="14,0,0,0" Text="{Binding Detail}" Classes="muted" /><TextBlock Grid.Column="3" Margin="14,0,0,0" Text="{Binding Result}" Classes="muted" /></Grid></DataTemplate></ListBox.ItemTemplate></ListBox>
-        </StackPanel></Border>
-        <Border Classes="panel" Padding="24"><Grid RowDefinitions="Auto,*"><Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="4"><TextBlock Text="最新執行紀錄" FontSize="18" FontWeight="SemiBold" Foreground="#12312F" /><TextBlock Text="Node / Playwright 命令的完整輸出會顯示於此。" Classes="muted" FontSize="12" /></StackPanel><Button Grid.Column="1" Classes="secondary" Content="清除紀錄" Command="{Binding ClearLogCommand}" /></Grid><TextBox Grid.Row="1" Margin="0,16,0,0" Text="{Binding LogText}" IsReadOnly="True" AcceptsReturn="True" MinHeight="125" TextWrapping="Wrap" FontFamily="Cascadia Mono,Consolas,monospace" FontSize="12" Background="#F5F8F7" BorderBrush="#D5E3E0" /></Grid></Border>
+
+    <ScrollViewer Grid.Column="1" Margin="38,34,24,24" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel MaxWidth="650" Spacing="18">
+
+        <!-- Dashboard -->
+        <StackPanel x:Name="DashboardView" Spacing="18">
+          <TextBlock Text="簽到總覽" FontSize="30" FontWeight="SemiBold" Foreground="#12312F"/>
+          <TextBlock Classes="muted"
+                     Text="手動執行每日簽到，並讀取最近一次 Digen Daily Reward 的完成狀態。"
+                     TextWrapping="Wrap"/>
+          <Border Classes="panel">
+            <StackPanel Spacing="18">
+              <TextBlock Text="GitHub Actions 儀表板" FontSize="20" FontWeight="SemiBold"/>
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button x:Name="TriggerButton" Classes="primary" Click="TriggerButton_OnClick">立即執行簽到</Button>
+                <Button x:Name="RefreshButton" Click="RefreshButton_OnClick">更新執行結果</Button>
+              </StackPanel>
+              <Grid ColumnDefinitions="*,*">
+                <StackPanel Spacing="4" Margin="0,0,24,0">
+                  <TextBlock Classes="muted" Text="本機別名帳號" FontSize="12"/>
+                  <TextBlock x:Name="ConfiguredMetric" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="#067B75"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="4">
+                  <TextBlock Classes="muted" Text="最近執行" FontSize="12"/>
+                  <TextBlock x:Name="RunMetric" Text="尚未讀取" FontSize="20" FontWeight="SemiBold"/>
+                </StackPanel>
+              </Grid>
+              <Border Height="1" Background="#D5E3E0"/>
+              <Grid ColumnDefinitions="*,*">
+                <StackPanel Spacing="4" Margin="0,0,24,0">
+                  <TextBlock Classes="muted" Text="最近 run 帳號狀態" FontSize="12"/>
+                  <TextBlock x:Name="MonthlyStreakMetric" Text="—" FontSize="18" FontWeight="SemiBold" Foreground="#067B75"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="4">
+                  <TextBlock Classes="muted" Text="完成時間" FontSize="12"/>
+                  <TextBlock x:Name="RunTimeMetric" Text="—" FontSize="18" FontWeight="SemiBold"/>
+                </StackPanel>
+              </Grid>
+              <TextBlock x:Name="DashboardStatus" Classes="muted"
+                         Text="執行後可在 GitHub Actions 檢視各帳號的成功、失敗與未設定狀態。"
+                         TextWrapping="Wrap"/>
+              <TextBlock Text="最近一次執行明細" FontSize="16" FontWeight="SemiBold"/>
+              <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="MonthlyAccountsPanel" Spacing="7"/>
+              </ScrollViewer>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- Accounts -->
+        <StackPanel x:Name="AccountsView" IsVisible="False" Spacing="18">
+          <TextBlock Text="帳號設定" FontSize="30" FontWeight="SemiBold" Foreground="#12312F"/>
+          <TextBlock Classes="muted"
+                     Text="名稱會保存在本機，並寫入 accounts.json 供登入腳本使用；同時對應 DIGEN_TOKEN1–33。"
+                     TextWrapping="Wrap"/>
+          <Border Classes="panel">
+            <StackPanel Spacing="12">
+              <TextBlock Text="帳號別名" FontSize="19" FontWeight="SemiBold"/>
+              <ScrollViewer MaxHeight="410">
+                <StackPanel x:Name="AliasPanel" Spacing="8"/>
+              </ScrollViewer>
+              <Button HorizontalAlignment="Left" Click="SaveAliasesButton_OnClick">儲存本機別名</Button>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- Login / export token -->
+        <StackPanel x:Name="LoginView" IsVisible="False" Spacing="18">
+          <TextBlock Text="更新登入狀態" FontSize="30" FontWeight="SemiBold" Foreground="#12312F"/>
+          <TextBlock Classes="muted"
+                     Text="瀏覽器開啟後完成 Digen 登入，再關閉瀏覽器；工具會從本機 profile 讀取 digen_token 並供你複製到 GitHub Secret。"
+                     TextWrapping="Wrap"/>
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Text="選擇帳號" FontSize="19" FontWeight="SemiBold"/>
+              <ComboBox x:Name="AccountComboBox" Width="280" SelectedIndex="0"
+                        SelectionChanged="AccountComboBox_OnSelectionChanged"/>
+              <Border Background="#E6F2F0" CornerRadius="7" Padding="12,8">
+                <TextBlock x:Name="SecretNameText" FontFamily="Consolas,Cascadia Mono,monospace" Foreground="#076861"/>
+              </Border>
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <ComboBox x:Name="BrowserComboBox" Width="120" SelectedIndex="0"/>
+                <Button x:Name="StartLoginButton" Classes="primary" Click="StartLoginButton_OnClick">開始登入並匯出</Button>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button x:Name="CopyTokenButton" IsEnabled="False" Click="CopyTokenButton_OnClick">複製 Digen Token</Button>
+                <Button x:Name="CopySecretButton" Click="CopySecretButton_OnClick">複製 Secret 名稱</Button>
+              </StackPanel>
+              <Border Height="1" Background="#D5E3E0" Margin="0,4"/>
+              <TextBlock Text="本機 profile" FontSize="16" FontWeight="SemiBold"/>
+              <TextBlock x:Name="ProfileStatus" Classes="muted"
+                         Text="選擇帳號後可建立或更新對應的本機瀏覽器 profile。"
+                         TextWrapping="Wrap"/>
+              <TextBlock x:Name="LoginStatus" Classes="muted"
+                         Text="Token 不會寫入設定檔或執行紀錄；請直接貼到對應的 GitHub Repository Secret。"
+                         TextWrapping="Wrap"/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
       </StackPanel>
-      <StackPanel IsVisible="{Binding IsAccounts}" Spacing="24">
-        <StackPanel Spacing="7"><TextBlock Text="帳號設定" FontSize="31" FontWeight="Light" Foreground="#12312F" /><TextBlock Text="帳號名稱會儲存在本機 accounts.json，並依清單順序對應 DIGEN_TOKEN1、DIGEN_TOKEN2 等 GitHub Secret。" Classes="muted" FontSize="15" TextWrapping="Wrap" /></StackPanel>
-        <Border Classes="panel" Padding="28"><StackPanel Spacing="14"><TextBlock Text="帳號別名" FontSize="20" FontWeight="SemiBold" Foreground="#12312F" /><TextBlock Text="新增或調整別名後按下儲存。已停用的帳號不會在本機執行每日簽到。" Classes="muted" /><ListBox ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}" BorderThickness="0" Background="Transparent" MaxHeight="390"><ListBox.ItemTemplate><DataTemplate><Grid ColumnDefinitions="Auto,*,Auto" Margin="0,6"><CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" /><TextBox Grid.Column="1" Margin="14,0" Text="{Binding Name}" Watermark="帳號別名" /><TextBlock Grid.Column="2" Text="{Binding Result}" Classes="muted" VerticalAlignment="Center" /></Grid></DataTemplate></ListBox.ItemTemplate></ListBox><StackPanel Orientation="Horizontal" Spacing="10"><Button Classes="secondary" Content="新增帳號" Command="{Binding AddAccountCommand}" /><Button Classes="secondary" Content="移除帳號" Command="{Binding RemoveAccountCommand}" /><Button Classes="primary" Content="儲存帳號別名" Command="{Binding SaveCommand}" /></StackPanel></StackPanel></Border>
-      </StackPanel>
-      <StackPanel IsVisible="{Binding IsLogin}" Spacing="24">
-        <StackPanel Spacing="7"><TextBlock Text="建立登入狀態" FontSize="31" FontWeight="Light" Foreground="#12312F" /><TextBlock Text="選擇帳號後開啟登入瀏覽器。完成 Digen 登入並關閉瀏覽器，再複製 Token 至對應的 GitHub Secret。" Classes="muted" FontSize="15" TextWrapping="Wrap" /></StackPanel>
-        <Border Classes="panel" Padding="28"><StackPanel Spacing="18"><TextBlock Text="選擇帳號與 Secret" FontSize="20" FontWeight="SemiBold" Foreground="#12312F" /><ComboBox ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}" MinWidth="270"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate></ComboBox><Border Background="#E6F2F0" CornerRadius="8" Padding="14"><TextBlock Text="{Binding SecretName}" Foreground="#076861" FontFamily="Cascadia Mono,Consolas,monospace" /></Border><StackPanel Orientation="Horizontal" Spacing="10"><Button Classes="primary" Content="開始登入並建立狀態" Command="{Binding LoginCommand}" IsEnabled="{Binding HasSelectedAccount}" Padding="18,10" /><Button Classes="secondary" Content="複製 Digen Token" Command="{Binding ExportTokenCommand}" IsEnabled="{Binding HasSelectedAccount}" Padding="16,10" /></StackPanel><TextBlock Text="{Binding TokenStatus}" Classes="muted" TextWrapping="Wrap" /><TextBlock Text="Token 不會顯示於畫面、寫入本機檔案或執行紀錄。請直接貼到 GitHub Repository Secret。" Foreground="#067B75" TextWrapping="Wrap" /></StackPanel></Border>
-      </StackPanel>
-    </StackPanel></ScrollViewer>
+    </ScrollViewer>
   </Grid>
 </Window>
