@@ -1,20 +1,19 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { chromium } from "playwright";
 import {
   ensureRuntimeDirs,
-  existingBrowserExecutable,
   getEnabledAccounts,
+  launchPersistentBrowserContext,
   loadConfig,
   logsDir,
-  profilePathFor
+  normalizeBrowserName
 } from "./config.js";
 
 const args = new Set(process.argv.slice(2));
 const headed = args.has("--headed");
 const onlyAccount = process.argv.slice(2).find((arg) => !arg.startsWith("-"));
 const browserArg = process.argv.find((arg) => arg.startsWith("--browser="));
-const browserName = browserArg?.split("=")[1] ?? "chrome";
+const browserName = normalizeBrowserName(browserArg?.split("=")[1] ?? "chrome");
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -108,11 +107,8 @@ async function waitForRewardResponse(page, rewardPromise, timeoutMs) {
 
 async function runForAccount(config, account) {
   const startedAt = new Date().toISOString();
-  const executablePath = await existingBrowserExecutable(browserName);
-  const context = await chromium.launchPersistentContext(profilePathFor(account.name), {
-    executablePath: executablePath ?? undefined,
-    headless: !headed,
-    viewport: { width: 1440, height: 960 }
+  const context = await launchPersistentBrowserContext(account.name, browserName, {
+    headless: !headed
   });
 
   const page = context.pages()[0] ?? await context.newPage();

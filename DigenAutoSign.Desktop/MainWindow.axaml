@@ -131,7 +131,7 @@
         <StackPanel x:Name="LoginView" IsVisible="False" Spacing="18">
           <TextBlock Text="更新登入狀態" FontSize="30" FontWeight="SemiBold" Foreground="#12312F"/>
           <TextBlock Classes="muted"
-                     Text="瀏覽器開啟後完成 Digen 登入，再關閉瀏覽器；工具會從本機 profile 讀取 digen_token 並供你複製到 GitHub Secret。"
+                     Text="瀏覽器開啟後完成 Digen 登入，再關閉瀏覽器；工具會從本機 profile 讀取 digen_token 並供你複製到 GitHub Secret。建議順序：chrome → 被 Google 擋時改選 edge 備案 → 仍不行再選 firefox（各瀏覽器使用獨立 profile）。"
                      TextWrapping="Wrap"/>
           <Border Classes="panel">
             <StackPanel Spacing="14">
@@ -142,7 +142,8 @@
                 <TextBlock x:Name="SecretNameText" FontFamily="Consolas,Cascadia Mono,monospace" Foreground="#076861"/>
               </Border>
               <StackPanel Orientation="Horizontal" Spacing="10">
-                <ComboBox x:Name="BrowserComboBox" Width="120" SelectedIndex="0"/>
+                <ComboBox x:Name="BrowserComboBox" Width="120" SelectedIndex="0"
+                          SelectionChanged="BrowserComboBox_OnSelectionChanged"/>
                 <Button x:Name="StartLoginButton" Classes="primary" Click="StartLoginButton_OnClick">開始登入並匯出</Button>
               </StackPanel>
               <StackPanel Orientation="Horizontal" Spacing="10">

@@ -3,11 +3,12 @@ import path from "node:path";
 import { chromium } from "playwright";
 import {
   ensureRuntimeDirs,
-  existingBrowserExecutable,
   getAccount,
+  isFirefoxBrowser,
+  launchPersistentBrowserContext,
   loadConfig,
   logsDir,
-  profilePathFor
+  normalizeBrowserName
 } from "./config.js";
 
 const rawArgs = process.argv.slice(2);
@@ -17,7 +18,7 @@ const browserArg = rawArgs.find((arg) => arg.startsWith("--browser="));
 const tokenArg = rawArgs.find((arg) => arg.startsWith("--token="));
 const headed = rawArgs.includes("--headed");
 const cdpUrl = cdpArg?.split("=")[1];
-const browserName = browserArg?.split("=")[1] ?? "chrome";
+const browserName = normalizeBrowserName(browserArg?.split("=")[1] ?? "chrome");
 const tokenNameArg = rawArgs.find((arg) => arg.startsWith("--token-name="));
 const tokenName = tokenNameArg?.slice("--token-name=".length);
 const explicitToken = tokenArg?.slice("--token=".length)
@@ -166,6 +167,10 @@ async function callRewardApi(page, siteUrl, apiBaseUrl, rewardEndpoint) {
 }
 
 async function runWithCdp(config) {
+  if (isFirefoxBrowser(browserName)) {
+    throw new Error("CDP mode only works with Chrome/Edge. Use a Chromium browser or profile mode with --browser=firefox.");
+  }
+
   const browser = await chromium.connectOverCDP(cdpUrl);
   const context = browser.contexts()[0] ?? await browser.newContext();
   const page = context.pages().find((candidate) => candidate.url().includes("digen.ai")) ?? await context.newPage();
@@ -178,11 +183,8 @@ async function runWithCdp(config) {
 }
 
 async function runWithProfile(config, account) {
-  const executablePath = await existingBrowserExecutable(browserName);
-  const context = await chromium.launchPersistentContext(profilePathFor(account.name), {
-    executablePath: executablePath ?? undefined,
-    headless: !headed,
-    viewport: { width: 1440, height: 960 }
+  const context = await launchPersistentBrowserContext(account.name, browserName, {
+    headless: !headed
   });
 
   const page = await context.newPage();

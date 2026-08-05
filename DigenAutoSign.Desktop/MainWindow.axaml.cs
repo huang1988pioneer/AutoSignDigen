@@ -21,7 +21,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         _workspace = FindWorkspace() ?? Environment.CurrentDirectory;
         _aliases = LoadAliases();
-        BrowserComboBox.ItemsSource = new[] { "chrome", "edge" };
+        // Fallback order when Google blocks a browser: chrome → edge → firefox.
+        BrowserComboBox.ItemsSource = new[] { "chrome", "edge", "firefox" };
         BrowserComboBox.SelectedIndex = 0;
         AccountComboBox.ItemsSource = Enumerable.Range(1, AccountCount)
             .Select(i => FormatAccountLabel(i))
@@ -43,6 +44,21 @@ public partial class MainWindow : Window
     }
     private string SecretName => $"DIGEN_TOKEN{AccountNumber}";
     private string BrowserName => BrowserComboBox.SelectedItem as string ?? "chrome";
+    /// <summary>
+    /// chrome → profiles/name; edge → profiles/name-edge; firefox → profiles/name-firefox.
+    /// Each browser keeps its own session so fallback logins do not clash.
+    /// </summary>
+    private string ProfileFolderName
+    {
+        get
+        {
+            if (string.Equals(BrowserName, "edge", StringComparison.OrdinalIgnoreCase))
+                return $"{ProfileName}-edge";
+            if (string.Equals(BrowserName, "firefox", StringComparison.OrdinalIgnoreCase))
+                return $"{ProfileName}-firefox";
+            return ProfileName;
+        }
+    }
     private static string AliasFile => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "DigenAutoSign",
@@ -56,6 +72,13 @@ public partial class MainWindow : Window
         _exportedToken = null;
         if (CopyTokenButton is not null) CopyTokenButton.IsEnabled = false;
         UpdateAccountDisplay();
+    }
+
+    private void BrowserComboBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        // Profile path depends on selected browser (edge/firefox use separate folders).
+        if (ProfileStatus is not null)
+            UpdateAccountDisplay();
     }
 
     private void ShowView(Control view)
@@ -76,12 +99,12 @@ public partial class MainWindow : Window
             ? SecretName
             : $"{SecretName}  ·  {label}";
 
-        var profileDir = Path.Combine(_workspace, "profiles", ProfileName);
+        var profileDir = Path.Combine(_workspace, "profiles", ProfileFolderName);
         if (ProfileStatus is not null)
         {
             ProfileStatus.Text = Directory.Exists(profileDir)
-                ? $"本機 profile：profiles/{ProfileName}"
-                : $"尚未建立 profile：profiles/{ProfileName}（請先登入）";
+                ? $"本機 profile：profiles/{ProfileFolderName}"
+                : $"尚未建立 profile：profiles/{ProfileFolderName}（請先登入）";
         }
     }
 
@@ -112,6 +135,12 @@ public partial class MainWindow : Window
             EnsureAccountInConfig(ProfileName);
             LoginStatus.Text = "正在確認 Node.js 相依套件…";
             await RunProcessAsync("npm", ["install"]);
+
+            if (string.Equals(BrowserName, "firefox", StringComparison.OrdinalIgnoreCase))
+            {
+                LoginStatus.Text = "正在確認 Playwright Firefox（首次可能需下載）…";
+                await RunProcessAsync("npx", ["playwright", "install", "firefox"]);
+            }
 
             LoginStatus.Text = "瀏覽器已開啟。請完成 Digen 登入後關閉瀏覽器視窗；工具會在關閉後繼續匯出 Token。";
             await RunProcessAsync("node", [

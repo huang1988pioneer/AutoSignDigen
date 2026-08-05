@@ -1,11 +1,11 @@
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import { chromium } from "playwright";
 import {
   ensureRuntimeDirs,
-  existingBrowserExecutable,
   getAccount,
+  launchPersistentBrowserContext,
   loadConfig,
+  normalizeBrowserName,
   profilePathFor
 } from "./config.js";
 
@@ -15,7 +15,7 @@ function getAccountName() {
 
 function getBrowserName() {
   const browserArg = process.argv.find((arg) => arg.startsWith("--browser="));
-  return browserArg?.split("=")[1] ?? "chrome";
+  return normalizeBrowserName(browserArg?.split("=")[1] ?? "chrome");
 }
 
 const accountName = getAccountName();
@@ -44,18 +44,8 @@ if (!account) {
 }
 
 const browserName = getBrowserName();
-const executablePath = await existingBrowserExecutable(browserName);
-
-if (executablePath) {
-  console.log(`Using system browser: ${executablePath}`);
-} else {
-  console.log(`System ${browserName} was not found. Falling back to Playwright Chromium.`);
-}
-
-const context = await chromium.launchPersistentContext(profilePathFor(account.name), {
-  executablePath: executablePath ?? undefined,
-  headless: false,
-  viewport: { width: 1440, height: 960 }
+const context = await launchPersistentBrowserContext(account.name, browserName, {
+  headless: false
 });
 
 const page = context.pages()[0] ?? await context.newPage();
@@ -64,7 +54,7 @@ await page.goto(account.siteUrl ?? config.siteUrl, {
   timeout: 120000
 });
 
-console.log(`Opened login browser for ${account.name}.`);
+console.log(`Opened login browser for ${account.name} (${browserName}).`);
 if (waitForBrowserClose) {
   console.log("Log in to Digen, then close the browser window to save this login state.");
   await new Promise((resolve) => context.once("close", resolve));
@@ -76,4 +66,4 @@ if (waitForBrowserClose) {
   rl.close();
   await context.close();
 }
-console.log(`Saved profile: ${profilePathFor(account.name)}`);
+console.log(`Saved profile: ${profilePathFor(account.name, browserName)}`);

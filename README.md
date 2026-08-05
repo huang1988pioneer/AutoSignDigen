@@ -57,11 +57,32 @@ node scripts/login.js goldshoot0720 --browser=chrome
 
 Log in to Digen in the opened browser. After the account is active, return to the terminal and press Enter.
 
-If Google blocks Chrome, try Edge:
+### Browser fallback order
+
+1. **chrome** (default) — profile `profiles/<name>`
+2. **edge** (primary fallback when Google blocks Chrome) — system Microsoft Edge, profile `profiles/<name>-edge`
+3. **firefox** (last resort) — Playwright Firefox, profile `profiles/<name>-firefox`
+
+If Google blocks Chrome, switch to Edge:
 
 ```bat
 node scripts/login.js goldshoot0720 --browser=edge
 ```
+
+If Edge is also blocked, use Firefox (first time only: install the browser build):
+
+```bat
+cmd /c npx playwright install firefox
+node scripts/login.js goldshoot0720 --browser=firefox
+```
+
+Desktop UI: **更新登入狀態** → browser dropdown includes `chrome`, `edge`, and `firefox`.
+
+Login / export / check-in / api-reward must use the **same** `--browser=` value that created the profile. Chrome, Edge, and Firefox sessions are **not** interchangeable (separate profile folders).
+
+Notes:
+- `--browser=edge` uses installed Microsoft Edge (`msedge` channel / system path).
+- `--browser=firefox` uses Playwright-managed Firefox (not the system Mozilla install).
 
 ## Check In
 
@@ -79,6 +100,12 @@ If the profile was created with Edge:
 
 ```bat
 node scripts/checkin.js --headed --browser=edge
+```
+
+If the profile was created with Firefox:
+
+```bat
+node scripts/checkin.js --headed --browser=firefox
 ```
 
 Results are written to `logs/checkin-YYYY-MM-DD.jsonl`.

@@ -1,15 +1,16 @@
-import { chromium } from "playwright";
 import {
   ensureRuntimeDirs,
-  existingBrowserExecutable,
   getAccount,
+  launchPersistentBrowserContext,
   loadConfig,
-  profilePathFor
+  normalizeBrowserName
 } from "./config.js";
 
 const args = process.argv.slice(2);
 const accountName = args.find((arg) => !arg.startsWith("-"));
-const browserName = args.find((arg) => arg.startsWith("--browser="))?.split("=")[1] ?? "chrome";
+const browserName = normalizeBrowserName(
+  args.find((arg) => arg.startsWith("--browser="))?.split("=")[1] ?? "chrome"
+);
 
 if (!accountName) throw new Error("Specify an account name.");
 await ensureRuntimeDirs();
@@ -17,8 +18,7 @@ const config = await loadConfig();
 const account = getAccount(config, accountName);
 if (!account) throw new Error(`Account not found in accounts.json: ${accountName}`);
 
-const context = await chromium.launchPersistentContext(profilePathFor(account.name), {
-  executablePath: await existingBrowserExecutable(browserName) ?? undefined,
+const context = await launchPersistentBrowserContext(account.name, browserName, {
   headless: true
 });
 
