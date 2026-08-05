@@ -3,3 +3,5 @@ profiles/
 logs/
 accounts.json
 *.log
+bin/
+obj/

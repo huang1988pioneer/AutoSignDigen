@@ -2,6 +2,18 @@
 
 Playwright multi-profile daily login reward helper for Digen.
 
+## Windows Desktop UI (Avalonia)
+
+`DigenAutoSign.Desktop` is a Windows desktop control panel for the existing Node/Playwright scripts. It lets you select the workspace, manage `accounts.json`, open the interactive browser login for an account, run a selected account or all enabled accounts, and inspect the command output.
+
+Prerequisites: .NET 8 SDK, Node.js, and dependencies installed with `npm install`.
+
+```bat
+dotnet run --project DigenAutoSign.Desktop\DigenAutoSign.Desktop.csproj
+```
+
+The application uses the local `profiles` folder for browser sessions; it does not store passwords or Digen tokens in `accounts.json`.
+
 ## What Was Found
 
 Digen's frontend includes a `LoginReward` component. When a user is logged in, that component calls:

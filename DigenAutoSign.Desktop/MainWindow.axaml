@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DigenAutoSign.Desktop.MainWindow"
+        Width="1120" Height="760" MinWidth="860" MinHeight="600"
+        Title="Digen Auto Sign" Background="#0C1413">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="28">
+    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Digen Auto Sign" FontSize="26" FontWeight="Bold" />
+        <TextBlock Text="Windows 本機設定檔每日簽到工具" Classes="muted" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="3">
+        <TextBlock Text="{Binding Status}" HorizontalAlignment="Right" FontWeight="SemiBold" />
+        <TextBlock Text="憑證只保留在本機瀏覽器設定檔" Classes="muted" FontSize="12" />
+      </StackPanel>
+    </Grid>
+
+    <Grid Grid.Row="1" ColumnDefinitions="1.12*,1.45*">
+      <Grid RowDefinitions="Auto,*,Auto" Margin="0,0,9,0">
+        <Border Classes="panel" Padding="14">
+          <StackPanel Spacing="8">
+            <TextBlock Text="工作區" FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Text="{Binding WorkspaceRoot}" Watermark="包含 scripts 資料夾的專案路徑" />
+              <Button Grid.Column="1" Content="選擇資料夾" Margin="8,0,0,0" Command="{Binding BrowseWorkspaceCommand}" />
+            </Grid>
+            <Grid ColumnDefinitions="Auto,*">
+              <TextBlock Text="瀏覽器" VerticalAlignment="Center" Classes="muted" />
+              <ComboBox Grid.Column="1" Margin="10,0,0,0" SelectedItem="{Binding Browser}" ItemsSource="{Binding Browsers}" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1" Classes="panel" Padding="14">
+          <Grid RowDefinitions="Auto,*,Auto,Auto">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Spacing="2">
+                <TextBlock Text="帳號" FontWeight="SemiBold" />
+                <TextBlock Text="開啟登入後，在瀏覽器完成驗證，再回到終端機按 Enter。" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+              </StackPanel>
+              <Button Grid.Column="1" Content="重新載入" Command="{Binding ReloadCommand}" />
+            </Grid>
+            <ListBox Grid.Row="1" Margin="0,10,0,10" ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}" Background="Transparent" BorderThickness="0">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="Auto,*,Auto" Margin="4">
+                    <CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="1">
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                      <TextBlock Text="{Binding Detail}" Classes="muted" FontSize="12" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="2" Margin="10,0,0,0" Text="{Binding Result}" VerticalAlignment="Center" Classes="muted" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Grid Grid.Row="2" ColumnDefinitions="Auto,*" IsVisible="{Binding HasSelectedAccount}">
+              <TextBlock Text="帳號名稱" Classes="muted" VerticalAlignment="Center" />
+              <TextBox Grid.Column="1" Margin="10,0,0,0" Text="{Binding SelectedAccount.Name}" Watermark="例如：main" />
+            </Grid>
+            <Grid Grid.Row="3" Margin="0,10,0,0" ColumnDefinitions="*,Auto,Auto">
+              <Button Content="新增帳號" Command="{Binding AddAccountCommand}" />
+              <Button Grid.Column="1" Margin="8,0,0,0" Content="刪除選取" Command="{Binding RemoveAccountCommand}" />
+              <Button Grid.Column="2" Margin="8,0,0,0" Content="儲存設定" Command="{Binding SaveCommand}" />
+            </Grid>
+          </Grid>
+        </Border>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+          <Button Content="登入選取帳號" Command="{Binding LoginCommand}" IsEnabled="{Binding HasSelectedAccount}" />
+          <Button Classes="primary" Content="簽到選取帳號" Command="{Binding CheckSelectedCommand}" IsEnabled="{Binding HasSelectedAccount}" />
+          <Button Classes="primary" Content="簽到全部啟用帳號" Command="{Binding CheckAllCommand}" />
+        </StackPanel>
+      </Grid>
+
+      <Border Grid.Column="1" Classes="panel" Padding="16" Margin="9,0,0,0">
+        <Grid RowDefinitions="Auto,*,Auto">
+          <StackPanel Spacing="2">
+            <TextBlock Text="執行紀錄" FontWeight="SemiBold" />
+            <TextBlock Text="直接顯示 Node/Playwright 指令回傳；可據此判斷登入、驗證或 API 回應狀態。" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+          </StackPanel>
+          <TextBox Grid.Row="1" Margin="0,10,0,10" Text="{Binding LogText}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Cascadia Mono,Consolas,monospace" FontSize="12" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="#0A100F" BorderBrush="#263632" />
+          <Button Grid.Row="2" Content="清除畫面紀錄" Command="{Binding ClearLogCommand}" HorizontalAlignment="Left" />
+        </Grid>
+      </Border>
+    </Grid>
+
+    <TextBlock Grid.Row="2" Text="請勿將密碼或 Digen Token 寫入 accounts.json。此工具會使用 profiles 資料夾內的本機瀏覽器登入狀態。" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+  </Grid>
+</Window>
