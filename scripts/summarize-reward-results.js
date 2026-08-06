@@ -1,5 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  applyRowsToStreakState,
+  attachStreaksToRows,
+  loadStreakState,
+  saveStreakState,
+  streakStats,
+  taipeiDateString
+} from "./checkin-streaks.js";
 
 const STATUS_ORDER = {
   failed: 0,
@@ -201,6 +209,12 @@ function fmtCredits(value) {
   return String(num);
 }
 
+function fmtStreak(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return "0";
+  return `${num}d`;
+}
+
 function buildMarkdown(rows, meta = {}) {
   const counts = {
     total: rows.length,
@@ -215,6 +229,12 @@ function buildMarkdown(rows, meta = {}) {
     const delta = Number(row.creditsDelta);
     return Number.isFinite(delta) && delta > 0 ? sum + delta : sum;
   }, 0);
+
+  const streaks = meta.streakStats || {
+    accountsWithStreak: rows.filter((r) => (r.streak || 0) > 0).length,
+    maxStreak: rows.reduce((m, r) => Math.max(m, Number(r.streak) || 0), 0),
+    avgStreak: 0
+  };
 
   const generatedAt = meta.generatedAt || new Date().toISOString();
   const title = meta.title || "Digen daily login reward summary";
@@ -237,19 +257,23 @@ function buildMarkdown(rows, meta = {}) {
     `| Failed | **${counts.failed}** |`,
     `| Skipped (no secret) | **${counts.skipped}** |`,
     `| Credits gained this run | **+${gained}** |`,
+    `| Active streaks | **${streaks.accountsWithStreak}** |`,
+    `| Max consecutive days | **${streaks.maxStreak}** |`,
+    `| Avg consecutive days | **${streaks.avgStreak}** |`,
     "",
     `- Generated at: \`${generatedAt}\``,
+    meta.asOfDate ? `- Streak date (Asia/Taipei): \`${meta.asOfDate}\`` : null,
     meta.runUrl ? `- Workflow run: ${meta.runUrl}` : null,
     "",
     "### Account results",
     "",
-    `| # | Account | Status | Credits | Note |`,
-    `| ---: | --- | --- | ---: | --- |`,
+    `| # | Account | Status | Credits | Streak | Longest | Note |`,
+    `| ---: | --- | --- | ---: | ---: | ---: | --- |`,
     ...rows.map((row) => {
       const no = row.account ?? "—";
       return `| ${no} | ${escapeCell(row.name)} | ${statusLabel(row.status)} | ${fmtCredits(
         row.creditsDelta
-      )} | ${escapeCell(row.message)} |`;
+      )} | ${fmtStreak(row.streak)} | ${fmtStreak(row.longestStreak)} | ${escapeCell(row.message)} |`;
     }),
     ""
   ].filter((line) => line !== null);
@@ -276,21 +300,26 @@ function buildMarkdown(rows, meta = {}) {
   lines.push(
     "---",
     "",
-    "<sub>Status: `checked_in` = claimed this run · `already_done` = already claimed today · `skipped` = token secret missing · `failed` = re-auth or API error</sub>",
+    "<sub>Status: `checked_in` = claimed this run · `already_done` = already claimed today · `skipped` = token secret missing · `failed` = re-auth or API error · Streak = consecutive Asia/Taipei calendar days with successful check-in</sub>",
     ""
   );
 
-  return { markdown: `${lines.join("\n")}\n`, counts, gained };
+  return { markdown: `${lines.join("\n")}\n`, counts, gained, streaks };
 }
 
-function printConsoleTable(rows, counts, gained) {
+function printConsoleTable(rows, counts, gained, streaks) {
   console.log("\n========== Digen daily reward summary ==========");
   console.log(
     `Total: ${counts.total} | checked_in: ${counts.checked_in} | already_done: ${counts.already_done} | skipped: ${counts.skipped} | failed: ${counts.failed} | gained: +${gained}`
   );
+  if (streaks) {
+    console.log(
+      `Streaks: active ${streaks.accountsWithStreak} | max ${streaks.maxStreak}d | avg ${streaks.avgStreak}d`
+    );
+  }
   for (const row of rows) {
     console.log(
-      `- #${row.account ?? "?"} ${row.name}: ${row.status} | ${fmtCredits(row.creditsDelta)} | ${row.message}`
+      `- #${row.account ?? "?"} ${row.name}: ${row.status} | ${fmtCredits(row.creditsDelta)} | streak ${fmtStreak(row.streak)} (best ${fmtStreak(row.longestStreak)}) | ${row.message}`
     );
   }
   console.log("================================================\n");
@@ -299,10 +328,13 @@ function printConsoleTable(rows, counts, gained) {
 function main() {
   const inputDir = process.argv[2] || path.join(process.cwd(), "collected");
   const outDir = process.env.DIGEN_SUMMARY_DIR || path.join(process.cwd(), "artifacts");
+  const streakStatePath =
+    process.env.DIGEN_STREAK_STATE ||
+    path.join(process.cwd(), "streak-state", "checkin-streaks.json");
   const failOnFailed = process.env.DIGEN_FAIL_ON_FAILED !== "0";
 
-  const rows = loadRows(inputDir);
-  if (rows.length === 0) {
+  const baseRows = loadRows(inputDir);
+  if (baseRows.length === 0) {
     const message = `No check-in result JSON or api-reward logs found under ${inputDir}`;
     console.error(message);
     if (process.env.GITHUB_STEP_SUMMARY) {
@@ -316,6 +348,13 @@ function main() {
     return;
   }
 
+  const asOfDate = process.env.DIGEN_STREAK_DATE || taipeiDateString();
+  const prevStreakState = loadStreakState(streakStatePath);
+  const streakState = applyRowsToStreakState(prevStreakState, baseRows, asOfDate);
+  const rows = attachStreaksToRows(baseRows, streakState);
+  const streaks = streakStats(streakState);
+  saveStreakState(streakStatePath, streakState);
+
   const serverUrl = process.env.GITHUB_SERVER_URL || "https://github.com";
   const repository = process.env.GITHUB_REPOSITORY;
   const runId = process.env.GITHUB_RUN_ID;
@@ -325,23 +364,29 @@ function main() {
   const { markdown, counts, gained } = buildMarkdown(rows, {
     title: "Digen daily login reward summary",
     generatedAt: new Date().toISOString(),
-    runUrl
+    runUrl,
+    asOfDate,
+    streakStats: streaks
   });
 
-  printConsoleTable(rows, counts, gained);
+  printConsoleTable(rows, counts, gained, streaks);
 
   fs.mkdirSync(outDir, { recursive: true });
   const mdPath = path.join(outDir, "checkin-daily-summary.md");
   const jsonPath = path.join(outDir, "checkin-daily-summary.json");
+  const streaksOutPath = path.join(outDir, "checkin-streaks.json");
   fs.writeFileSync(mdPath, markdown, "utf8");
   fs.writeFileSync(
     jsonPath,
     `${JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
+        asOfDate,
+        timezone: "Asia/Taipei",
         runUrl,
         counts,
         gained,
+        streaks,
         rows
       },
       null,
@@ -349,9 +394,12 @@ function main() {
     )}\n`,
     "utf8"
   );
+  fs.writeFileSync(streaksOutPath, `${JSON.stringify(streakState, null, 2)}\n`, "utf8");
 
   console.log(`Wrote ${mdPath}`);
   console.log(`Wrote ${jsonPath}`);
+  console.log(`Wrote ${streaksOutPath}`);
+  console.log(`Updated streak state: ${streakStatePath}`);
 
   if (process.env.GITHUB_STEP_SUMMARY) {
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown, "utf8");

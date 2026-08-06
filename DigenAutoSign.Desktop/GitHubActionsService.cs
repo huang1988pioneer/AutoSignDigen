@@ -56,17 +56,148 @@ internal sealed class GitHubActionsService
 
                 // Matrix jobs for missing secrets often complete with success after writing skipped result.
                 // Prefer job name label; mark unconfigured when conclusion is skipped or name is default accountN with skipped artifact semantics.
-                byNumber[number] = new AccountRunStatus(number, alias, display, configured);
+                byNumber[number] = new AccountRunStatus(number, alias, display, configured, null, null);
             }
 
+            var streaks = await TryLoadStreaksAsync(repository, runId);
             return Enumerable.Range(1, 33)
-                .Select(number => byNumber.GetValueOrDefault(number)
-                    ?? new AccountRunStatus(number, $"account{number}", "未出現在此 run", false))
+                .Select(number =>
+                {
+                    var baseStatus = byNumber.GetValueOrDefault(number)
+                        ?? new AccountRunStatus(number, $"account{number}", "未出現在此 run", false, null, null);
+                    if (streaks.TryGetValue(number, out var streakInfo))
+                    {
+                        return baseStatus with
+                        {
+                            Streak = streakInfo.Streak,
+                            LongestStreak = streakInfo.LongestStreak,
+                            Alias = string.IsNullOrWhiteSpace(streakInfo.Name) ? baseStatus.Alias : streakInfo.Name
+                        };
+                    }
+                    return baseStatus;
+                })
                 .ToArray();
         }
         catch
         {
             return EmptyStatuses();
+        }
+    }
+
+    private async Task<Dictionary<int, StreakInfo>> TryLoadStreaksAsync(string repository, long runId)
+    {
+        var result = new Dictionary<int, StreakInfo>();
+        var tempRoot = Path.Combine(Path.GetTempPath(), "DigenAutoSign", $"run-{runId}-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(tempRoot);
+            // Prefer full daily summary (includes per-row streak); fall back to streak-only artifact.
+            foreach (var artifactName in new[] { "checkin-daily-summary", "checkin-streaks" })
+            {
+                try
+                {
+                    await RunGhAsync([
+                        "run", "download", runId.ToString(),
+                        "--repo", repository,
+                        "--name", artifactName,
+                        "--dir", tempRoot
+                    ]);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                var summaryPath = Directory.EnumerateFiles(tempRoot, "checkin-daily-summary.json", SearchOption.AllDirectories)
+                    .FirstOrDefault();
+                if (summaryPath is not null && TryParseSummaryStreaks(summaryPath, result))
+                    return result;
+
+                var streakPath = Directory.EnumerateFiles(tempRoot, "checkin-streaks.json", SearchOption.AllDirectories)
+                    .FirstOrDefault();
+                if (streakPath is not null && TryParseStreakState(streakPath, result))
+                    return result;
+            }
+        }
+        catch
+        {
+            // Streaks are optional UI enrichment.
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempRoot))
+                    Directory.Delete(tempRoot, recursive: true);
+            }
+            catch
+            {
+                // ignore cleanup failures
+            }
+        }
+
+        return result;
+    }
+
+    private static bool TryParseSummaryStreaks(string path, Dictionary<int, StreakInfo> into)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            if (!document.RootElement.TryGetProperty("rows", out var rows))
+                return false;
+
+            foreach (var row in rows.EnumerateArray())
+            {
+                if (!row.TryGetProperty("account", out var accountEl) || accountEl.ValueKind != JsonValueKind.Number)
+                    continue;
+                var number = accountEl.GetInt32();
+                var name = row.TryGetProperty("name", out var nameEl) ? nameEl.GetString() : null;
+                var streak = row.TryGetProperty("streak", out var streakEl) && streakEl.ValueKind == JsonValueKind.Number
+                    ? streakEl.GetInt32()
+                    : 0;
+                var longest = row.TryGetProperty("longestStreak", out var longEl) && longEl.ValueKind == JsonValueKind.Number
+                    ? longEl.GetInt32()
+                    : 0;
+                into[number] = new StreakInfo(name, streak, longest);
+            }
+
+            return into.Count > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool TryParseStreakState(string path, Dictionary<int, StreakInfo> into)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            if (!document.RootElement.TryGetProperty("accounts", out var accounts))
+                return false;
+
+            foreach (var prop in accounts.EnumerateObject())
+            {
+                if (!int.TryParse(prop.Name, out var number))
+                    continue;
+                var entry = prop.Value;
+                var name = entry.TryGetProperty("name", out var nameEl) ? nameEl.GetString() : null;
+                var streak = entry.TryGetProperty("streak", out var streakEl) && streakEl.ValueKind == JsonValueKind.Number
+                    ? streakEl.GetInt32()
+                    : 0;
+                var longest = entry.TryGetProperty("longestStreak", out var longEl) && longEl.ValueKind == JsonValueKind.Number
+                    ? longEl.GetInt32()
+                    : 0;
+                into[number] = new StreakInfo(name, streak, longest);
+            }
+
+            return into.Count > 0;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -92,7 +223,7 @@ internal sealed class GitHubActionsService
 
     private static AccountRunStatus[] EmptyStatuses() =>
         Enumerable.Range(1, 33)
-            .Select(number => new AccountRunStatus(number, $"account{number}", "尚未讀取", false))
+            .Select(number => new AccountRunStatus(number, $"account{number}", "尚未讀取", false, null, null))
             .ToArray();
 
     private static async Task<string> RunGhAsync(IEnumerable<string> arguments, string? workingDirectory = null)
@@ -148,4 +279,12 @@ internal sealed record RunInfo(
     DateTimeOffset UpdatedAt,
     string Url);
 
-internal sealed record AccountRunStatus(int Number, string Alias, string Status, bool IsConfigured);
+internal sealed record AccountRunStatus(
+    int Number,
+    string Alias,
+    string Status,
+    bool IsConfigured,
+    int? Streak,
+    int? LongestStreak);
+
+internal sealed record StreakInfo(string? Name, int Streak, int LongestStreak);

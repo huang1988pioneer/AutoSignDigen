@@ -6,3 +6,4 @@ accounts.json
 bin/
 obj/
 artifacts/
+streak-state/

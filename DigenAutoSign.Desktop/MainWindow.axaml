@@ -57,7 +57,7 @@
           <Button Classes="nav" Click="LoginNavButton_OnClick">更新登入狀態</Button>
         </StackPanel>
 
-        <TextBlock Text="排程：台灣時間 05:05、17:05（GitHub Actions）"
+        <TextBlock Text="排程：台灣時間 05:05、13:05、21:05（GitHub Actions，33 帳號依序錯開 5–15 秒）"
                    TextWrapping="Wrap" FontSize="12" Foreground="#8FB8B3" Margin="0,18,0,0"/>
       </StackPanel>
     </Border>
@@ -91,7 +91,7 @@
               <Border Height="1" Background="#D5E3E0"/>
               <Grid ColumnDefinitions="*,*">
                 <StackPanel Spacing="4" Margin="0,0,24,0">
-                  <TextBlock Classes="muted" Text="最近 run 帳號狀態" FontSize="12"/>
+                  <TextBlock Classes="muted" Text="連續簽到（台北日）" FontSize="12"/>
                   <TextBlock x:Name="MonthlyStreakMetric" Text="—" FontSize="18" FontWeight="SemiBold" Foreground="#067B75"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="4">

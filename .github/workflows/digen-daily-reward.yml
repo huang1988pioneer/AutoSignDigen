@@ -2,8 +2,10 @@ name: Digen Daily Reward
 
 on:
   schedule:
-    - cron: "5 21 * * *"
-    - cron: "5 9 * * *"
+    # Asia/Taipei (UTC+8) windows: 05:00–06:00, 13:00–14:00, 21:00–22:00
+    - cron: "5 21 * * *"   # 05:05 Taipei
+    - cron: "5 5 * * *"    # 13:05 Taipei
+    - cron: "5 13 * * *"   # 21:05 Taipei
   workflow_dispatch:
 
 jobs:
@@ -87,7 +89,9 @@ jobs:
     needs: check-token-secrets
     strategy:
       fail-fast: false
-      max-parallel: 2
+      # All 33 account jobs start together; each then sleeps a cumulative
+      # 5–15s gap per preceding account so claims fire in order.
+      max-parallel: 33
       matrix:
         include:
           - token_index: 1
@@ -188,6 +192,31 @@ jobs:
         if: steps.token.outputs.configured == 'true'
         run: npm ci
 
+      - name: Stagger claim start (5–15s after previous account)
+        if: steps.token.outputs.configured == 'true'
+        shell: bash
+        run: |
+          index="${{ matrix.token_index }}"
+          if [ "$index" -le 1 ]; then
+            echo "Account 1 starts immediately (no stagger)."
+            exit 0
+          fi
+
+          # Shared PRNG across matrix jobs: gap i is deterministic from run id,
+          # so account N waits sum(gap_1..gap_{N-1}) where each gap is 5–15s.
+          seed_base="${GITHUB_RUN_ID:-0}-${GITHUB_RUN_ATTEMPT:-1}"
+          total=0
+          for i in $(seq 1 $((index - 1))); do
+            h="$(printf '%s' "${seed_base}-gap-${i}" | sha256sum | awk '{print $1}')"
+            n=$((16#${h:0:4}))
+            delay=$((5 + (n % 11)))
+            total=$((total + delay))
+            echo "gap after account ${i}: ${delay}s"
+          done
+
+          echo "Waiting ${total}s before claiming DIGEN_TOKEN${index} (${{ matrix.account_label }})..."
+          sleep "$total"
+
       - name: Claim Digen daily login reward
         if: steps.token.outputs.configured == 'true'
         run: npm run api-reward -- token
@@ -282,10 +311,27 @@ jobs:
           path: collected
           merge-multiple: false
 
+      - name: Restore consecutive check-in state
+        uses: actions/cache/restore@v4
+        with:
+          path: streak-state
+          key: checkin-streaks-${{ github.run_id }}
+          restore-keys: |
+            checkin-streaks-
+
       - name: Build daily summary
         env:
           DIGEN_SUMMARY_DIR: artifacts
+          DIGEN_STREAK_STATE: streak-state/checkin-streaks.json
         run: npm run summary -- collected
+
+      - name: Save consecutive check-in state
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: streak-state
+          key: checkin-streaks-${{ github.run_id }}
 
       - name: Upload daily summary
         if: always()
@@ -295,5 +341,15 @@ jobs:
           path: |
             artifacts/checkin-daily-summary.md
             artifacts/checkin-daily-summary.json
+            artifacts/checkin-streaks.json
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Upload streak state
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkin-streaks
+          path: streak-state/checkin-streaks.json
+          if-no-files-found: warn
+          retention-days: 90

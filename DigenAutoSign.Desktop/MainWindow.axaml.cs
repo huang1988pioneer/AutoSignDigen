@@ -252,8 +252,11 @@ public partial class MainWindow : Window
             var accounts = await _github.GetAccountStatusesAsync(repository, run.DatabaseId);
             var success = accounts.Count(a => string.Equals(a.Status, "success", StringComparison.OrdinalIgnoreCase));
             var failure = accounts.Count(a => string.Equals(a.Status, "failure", StringComparison.OrdinalIgnoreCase));
-            var other = accounts.Length - success - failure;
-            MonthlyStreakMetric.Text = $"成功 {success} · 失敗 {failure} · 其他 {other}";
+            var withStreak = accounts.Where(a => (a.Streak ?? 0) > 0).ToArray();
+            var maxStreak = accounts.Select(a => a.Streak ?? 0).DefaultIfEmpty(0).Max();
+            MonthlyStreakMetric.Text = withStreak.Length > 0
+                ? $"最長 {maxStreak} 天 · {withStreak.Length} 帳號有連續"
+                : $"成功 {success} · 失敗 {failure}";
             RenderAccountStatuses(accounts);
             DashboardStatus.Text = $"最近執行：{run.Url}";
         });
@@ -277,7 +280,7 @@ public partial class MainWindow : Window
                 ? localAlias
                 : account.Alias;
 
-            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("68,*,120") };
+            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("68,*,90,110") };
             row.Children.Add(new TextBlock
             {
                 Text = $"#{account.Number:00}",
@@ -292,6 +295,21 @@ public partial class MainWindow : Window
             Grid.SetColumn(alias, 1);
             row.Children.Add(alias);
 
+            var streakText = account.Streak is > 0
+                ? $"{account.Streak} 天"
+                : account.Streak is 0
+                    ? "0 天"
+                    : "—";
+            var streakBlock = new TextBlock
+            {
+                Text = streakText,
+                Foreground = account.Streak is > 0 ? Brushes.SeaGreen : Brushes.Gray,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                Margin = new Avalonia.Thickness(0, 0, 10, 0)
+            };
+            Grid.SetColumn(streakBlock, 2);
+            row.Children.Add(streakBlock);
+
             var isSuccess = string.Equals(account.Status, "success", StringComparison.OrdinalIgnoreCase);
             var isFailure = string.Equals(account.Status, "failure", StringComparison.OrdinalIgnoreCase);
             var state = new TextBlock
@@ -304,7 +322,7 @@ public partial class MainWindow : Window
                         : Brushes.Gray,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
             };
-            Grid.SetColumn(state, 2);
+            Grid.SetColumn(state, 3);
             row.Children.Add(state);
             MonthlyAccountsPanel.Children.Add(row);
         }

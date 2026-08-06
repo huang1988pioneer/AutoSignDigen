@@ -283,9 +283,17 @@ DIGEN_TOKEN32
 DIGEN_TOKEN33
 ```
 
-The workflow at `.github/workflows/digen-daily-reward.yml` runs every day at `21:05 UTC` and `09:05 UTC`, which are `05:05` and `17:05` in Taipei. It creates one GitHub Actions job per configured token, such as `checkin-token-1 - goldshoot0720`.
+The workflow at `.github/workflows/digen-daily-reward.yml` runs three times daily (Asia/Taipei):
 
-Configured token jobs run with at most two accounts in parallel to reduce simultaneous requests. Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
+| Taipei | UTC cron |
+|--------|----------|
+| 05:05 (window 05:00–06:00) | `5 21 * * *` |
+| 13:05 (window 13:00–14:00) | `5 5 * * *` |
+| 21:05 (window 21:00–22:00) | `5 13 * * *` |
+
+It creates one GitHub Actions job per configured token, such as `checkin-token-1 - goldshoot0720`.
+
+All 33 account jobs are allowed to run in parallel. Before claiming, each job waits a cumulative stagger so account *N* starts a random **5–15 seconds** after account *N−1* (shared seed per workflow run). Unset token secrets are skipped. During each run, the workflow also checks configured token values for duplicates and writes a warning if two `DIGEN_TOKEN` secrets have the same value.
 
 The workflow at `.github/workflows/check-token-secret-duplicates.yml` is a dedicated duplicate check for `DIGEN_TOKEN1` through `DIGEN_TOKEN33`. It runs daily at `20:35 UTC`, can be started manually from the Actions tab, and fails if two configured token secrets have the same value.
 
@@ -294,10 +302,12 @@ The workflow can also be started manually from the Actions tab.
 Each matrix job writes a structured `checkin-result.json` artifact (`checkin-result-N`). After all token jobs finish, the `daily-summary` job:
 
 1. Downloads every account result
-2. Builds one combined markdown/JSON report
-3. Writes the table into the workflow **Job Summary** (open the `daily-summary` job)
-4. Uploads `checkin-daily-summary` artifact (`checkin-daily-summary.md` + `.json`)
-5. Fails the summary job if any account status is `failed`
+2. Restores previous consecutive-day state (GitHub Actions cache)
+3. Updates each account’s **連續簽到天數** (Asia/Taipei calendar days; `checked_in` / `already_done` count as success; same-day re-runs do not double-count; a full missed day resets the streak)
+4. Builds one combined markdown/JSON report (includes `Streak` / `Longest` columns)
+5. Writes the table into the workflow **Job Summary** (open the `daily-summary` job)
+6. Uploads `checkin-daily-summary` (`*.md` / `*.json` / `checkin-streaks.json`) and `checkin-streaks` artifacts
+7. Fails the summary job if any account status is `failed`
 
 Per-account reward logs under `logs/` are still uploaded as `digen-reward-logs-tokenN-*` artifacts.
 
