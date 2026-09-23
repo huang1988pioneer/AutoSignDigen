@@ -1,5 +1,10 @@
 # Digen Auto Sign
 
+> [!WARNING]
+> **GitHub Actions 暫停提醒：2026.11.26（不含）之後暫停觸發。**
+> 自 **2026-11-27（Asia/Taipei）** 起，`digen-daily-reward.yml` 與 `check-token-secret-duplicates.yml` 不論是排程或手動觸發，都只會執行 `date-gate` 檢查並跳過所有簽到 / 檢查工作。2026-11-26 當天（含）仍會正常執行。
+> 若要恢復，請修改兩個 workflow 檔案頂部的 `PAUSE_AFTER_DATE`（或移除 `date-gate` 工作）。本機的 `npm run checkin` / Windows 工作排程器不受影響。
+
 Playwright multi-profile daily login reward helper for Digen.
 
 ## Desktop UI (Avalonia)
@@ -139,6 +144,9 @@ node scripts/api-reward.js --cdp=http://127.0.0.1:9222
 Results are written to `logs/api-reward-YYYY-MM-DD.jsonl`.
 
 ## GitHub Actions
+
+> [!IMPORTANT]
+> Scheduled and manual runs of `digen-daily-reward.yml` and `check-token-secret-duplicates.yml` are **paused after 2026-11-26 (exclusive, Asia/Taipei)**. A `date-gate` job checks the Taipei date against `PAUSE_AFTER_DATE` and skips all other jobs from 2026-11-27 onward. Update or remove `PAUSE_AFTER_DATE` in both workflows to resume. `desktop-release.yml` (tag push) is not affected.
 
 GitHub Actions cannot use the local browser profile. For Actions, save each Digen cookie value named `digen_token` as a repository secret. For `goldshoot0720`, use:
 
